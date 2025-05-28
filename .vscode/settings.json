@@ -1,0 +1,6 @@
+{
+	"files.associations": {
+		"wrangler.jsonc": "jsonc"
+	},
+	"cSpell.words": ["docstxt", "genai", "KHTML"]
+}

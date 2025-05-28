@@ -1,0 +1,52 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "gemini-telegram-bot",
+	"main": "src/index.js",
+	"compatibility_flags": ["nodejs_compat"],
+	"compatibility_date": "2025-05-13",
+	"observability": {
+		"enabled": true
+	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "TIMER_DO",
+				"class_name": "TimerDO"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["TimerDO"]
+		}
+	],
+	"vars": {
+		"GEMINI_API_KEY": "YOUR_GEMINI_API_KEY",
+		"GEMINI_MODEL_NAME": "GEMINI_API_MODEL_NAME",
+		"TELEGRAM_BOT_ADMIN_ID": "YOUR_TELEGRAM_ID",
+		"TELEGRAM_BOT_ID": "YOUR_TELEGRAM_BOT_ID",
+		"TELEGRAM_BOT_USERNAME": "@YOUR_TELEGRAM_BOT_USERNAME",
+		"TELEGRAM_BOT_TOKEN": "YOUR_TELEGRAM_BOT_TOKEN",
+		"WEBHOOK_SECRET_TOKEN": "YOUR_WEBHOOK_SECRET_TOKEN"
+		// "KV_EXPIRATION_TTL": "604800", // Seconds
+		// "ALLOWED_GROUP_IDS": "123,321", // Not yet implemented
+		// "MAX_CONTENTS_LENGTH": "10", // Integer
+		// "API_REQUEST_INTERVAL": "1.0" // Minutes
+	},
+	// npx wrangler kv namespace create xxx
+	"kv_namespaces": [
+		{
+			"binding": "TELEGRAM_BOT_CONFIG",
+			"id": "KV_BINDING_ID"
+		},
+		{
+			"binding": "GROUP_CHAT_CONTENTS",
+			"id": "KV_BINDING_ID"
+		},
+		{
+			"binding": "API_RATE_LIMIT",
+			"id": "KV_BINDING_ID"
+		}
+	]
+}
