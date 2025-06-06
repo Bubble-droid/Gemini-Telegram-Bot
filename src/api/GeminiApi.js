@@ -133,9 +133,9 @@ class GeminiApi {
 		const baseConfig = {
 			maxOutputTokens: 65536,
 			temperature: 0.3,
-			// thinkingConfig: {
-			// thinkingBudget: 12288,
-			// },
+			thinkingConfig: {
+				thinkingBudget: 24576,
+			},
 			tools: tools,
 			toolConfig: {
 				functionCallingConfig: {

@@ -11,6 +11,7 @@ import { scheduleDeletion } from '../../utils/scheduler';
  * @returns {boolean} - 如果消息已被处理，返回 true
  */
 async function newChatMemberHandler(message, env) {
+	console.log('Received message:', JSON.stringify(message, null, 2));
 	console.log('Handling new chat member message...');
 	const config = getConfig(env);
 	const bot = new TelegramBot(env);

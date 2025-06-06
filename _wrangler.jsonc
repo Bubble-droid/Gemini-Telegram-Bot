@@ -28,11 +28,11 @@
 		"TELEGRAM_BOT_ID": "YOUR_TELEGRAM_BOT_ID",
 		"TELEGRAM_BOT_USERNAME": "@YOUR_TELEGRAM_BOT_USERNAME",
 		"TELEGRAM_BOT_TOKEN": "YOUR_TELEGRAM_BOT_TOKEN",
-		"WEBHOOK_SECRET_TOKEN": "YOUR_WEBHOOK_SECRET_TOKEN"
-		// "KV_EXPIRATION_TTL": "604800", // Seconds
+		"WEBHOOK_SECRET_TOKEN": "YOUR_WEBHOOK_SECRET_TOKEN",
+		"KV_EXPIRATION_TTL": "604800", // Seconds
 		// "ALLOWED_GROUP_IDS": "123,321", // Not yet implemented
-		// "MAX_CONTENTS_LENGTH": "10", // Integer
-		// "API_REQUEST_INTERVAL": "1.0" // Minutes
+		"MAX_CONTENTS_LENGTH": "10", // Integer
+		"API_REQUEST_INTERVAL": "1.0" // Minutes
 	},
 	// npx wrangler kv namespace create xxx
 	"kv_namespaces": [

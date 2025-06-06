@@ -16,12 +16,12 @@ async function handleStartCommand(message, env) {
 	const bot = new TelegramBot(env);
 	const modelName = config.modelName;
 
-	try {
-		const {
-			chat: { id: chatId },
-			message_id: replyToMessageId,
-		} = message;
+	const {
+		chat: { id: chatId },
+		message_id: replyToMessageId,
+	} = message;
 
+	try {
 		if (chatId && replyToMessageId) {
 			const { message_id: startMessageId } = await bot.sendMessage({
 				chat_id: chatId,

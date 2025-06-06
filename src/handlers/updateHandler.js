@@ -8,7 +8,8 @@ import messagesHandler from './messagesHandler'; // 假设 messagesHandler 模�
  * @param {object} env - Cloudflare Worker 的环境变量对象
  */
 async function updateHandler(update, env) {
-	console.log('Received update:', JSON.stringify(update, null, 2));
+	// console.log('Received update:', JSON.stringify(update, null, 2));
+	console.log('Handling update...');
 
 	if (!update.message) return;
 

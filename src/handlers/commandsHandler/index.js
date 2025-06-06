@@ -12,6 +12,7 @@ import { scheduleDeletion } from '../../utils/scheduler';
  * @param {object} env - Cloudflare Worker 的环境变量对象
  */
 async function commandsHandler(message, env) {
+	console.log('Received message:', JSON.stringify(message, null, 2));
 	console.log('Handling commands message...');
 	const config = getConfig(env);
 	const bot = new TelegramBot(env);

@@ -16,15 +16,15 @@ async function handleClearCommand(message, env) {
 	const config = getConfig(env);
 	const bot = new TelegramBot(env);
 
-	try {
-		const {
-			chat: { id: chatId },
-			message_id: replyToMessageId,
-			from: { id: userId },
-		} = message;
+	const {
+		chat: { id: chatId },
+		message_id: replyToMessageId,
+		from: { id: userId },
+	} = message;
 
+	try {
 		if (chatId && userId && replyToMessageId) {
-			const { message_id: tmpMessageId } = await bot.sendMessage({
+			const { message_id: clearMessageId } = await bot.sendMessage({
 				chat_id: chatId,
 				text: 'Clearing...',
 				reply_to_message_id: replyToMessageId,
@@ -32,10 +32,10 @@ async function handleClearCommand(message, env) {
 
 			await clearChatContents(env, chatId, userId);
 
-			if (tmpMessageId) {
+			if (clearMessageId) {
 				await bot.deleteMessage({
 					chat_id: chatId,
-					message_id: tmpMessageId,
+					message_id: clearMessageId,
 				});
 			}
 

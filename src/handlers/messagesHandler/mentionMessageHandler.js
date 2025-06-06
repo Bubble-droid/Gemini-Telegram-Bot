@@ -76,10 +76,12 @@ async function extractMessageParts(message, env, botName) {
  * @returns {Promise<boolean>} - 如果消息被处理（无论是成功还是失败），返回 true；如果消息未提及 Bot 或无有效内容，返回 false。
  */
 async function handleMentionMessage(message, env, isChat = false) {
+	console.log('Received message:', JSON.stringify(message, null, 2));
 	console.log('Handling mention message...');
 	const config = getConfig(env);
 	const bot = new TelegramBot(env);
 	const geminiApi = new GeminiApi(env);
+	const adminId = config.adminId;
 	const botName = config.botName;
 	const messageText = message.text || message.caption || ''; // Keep original text for mention check
 
@@ -97,7 +99,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 			chat: { id: chatId },
 		} = message;
 
-		if (!messageText.replace(botName, '')) {
+		if (!messageText.replace(botName, '').trim() && !message.reply_to_message) {
 			console.log('No valid content to send to Gemini API.');
 			const { message_id } = await bot.sendMessage({
 				chat_id: chatId,
@@ -112,7 +114,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 
 		const { canProceed, retryAfterSeconds } = await rateLimiterCheck(env, chatId);
 
-		if (!canProceed) {
+		if (!canProceed && userId !== adminId) {
 			console.log(`Rate limit exceeded. Retry after ${retryAfterSeconds} seconds.`);
 			const { message_id } = await bot.sendMessage({
 				chat_id: chatId,
@@ -132,6 +134,9 @@ async function handleMentionMessage(message, env, isChat = false) {
 		if (message.reply_to_message) {
 			console.log('Handling reply_to_message...');
 			const replyParts = await extractMessageParts(message.reply_to_message, env, botName);
+			if (message.reply_to_message.from.username === botName.replace('@', '').trim()) {
+				isChat = true;
+			}
 			if (replyParts.length > 0) {
 				askContents.push({
 					role: isChat ? 'model' : 'user',
