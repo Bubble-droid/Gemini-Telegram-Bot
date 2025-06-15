@@ -9,7 +9,7 @@ import updateHandler from './updateHandler';
  * @param {object} env - Cloudflare Worker 的环境变量对象
  * @returns {Promise<Response>} 处理结果的 Response 对象
  */
-async function webhookHandler(request, env) {
+async function webhookHandler(request, env, ctx) {
 	const config = getConfig(env);
 
 	// 验证请求方法
@@ -25,9 +25,13 @@ async function webhookHandler(request, env) {
 
 	try {
 		const update = await request.json();
-		// 将验证通过的 Update 交给 updateHandler 处理
-		await updateHandler(update, env);
-		return new Response('OK', { status: 200 });
+		// 立即返回 200 响应
+		const response = new Response('OK', { status: 200 });
+
+		// 将验证通过的 Update 交给 updateHandler 处理，不阻塞响应
+		ctx.waitUntil(updateHandler(update, env));
+
+		return response;
 	} catch (error) {
 		console.error('Error processing webhook:', error);
 		return new Response('Error processing webhook request', { status: 500 });

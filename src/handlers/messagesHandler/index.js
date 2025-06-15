@@ -55,16 +55,23 @@ async function messagesHandler(message, env) {
 		}
 	} catch (error) {
 		console.error(`处理消息时发生错误 (消息ID: ${message?.message_id}, 对话ID: ${message?.chat?.id}):\n`, error);
-		// 将 error 转换为字符串
 
 		if (!error.toString().includes('不支持的文件类型')) {
 			await sendErrorNotification(env, error, 'messages processing error');
 		}
 
+		const regex = /You do not have permission to access the File .+? or it may not exist/g;
+
 		const bot = new TelegramBot(env);
 		const { message_id } = await bot.sendMessage({
 			chat_id: message?.chat?.id,
-			text: `❌ ${error.message || error}`,
+			text: `❌ ${async () => {
+				if (regex.test(error.toString())) {
+					return '存储在 Gemini APi 的历史文件可能已过期，请尝试使用命令 /clear@boxTrial_bot 清理上下文后再提问';
+				} else {
+					return error.message || error;
+				}
+			}}`,
 			reply_to_message_id: message?.message_id,
 		});
 

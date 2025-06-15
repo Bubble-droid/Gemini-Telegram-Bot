@@ -17,7 +17,7 @@ export default {
 		const url = new URL(request.url);
 		try {
 			if (url.pathname === '/webhook') {
-				return await webhookHandler(request, env);
+				return await webhookHandler(request, env, ctx);
 			} else if (url.pathname === '/' || url.pathname === '') {
 				return new Response('This is Working...', { status: 200 });
 			}

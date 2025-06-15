@@ -657,9 +657,11 @@
   GUI-for-Cores/Plugin-Hub/refs/heads/main/plugins/Generic/plugin-unblockneteasemusic.js
 - // 通用插件: 文件传输助手
   GUI-for-Cores/Plugin-Hub/refs/heads/main/plugins/Generic/plugin-file-transfer-assistant.js
-- // GFC 插件配置
+- // 通用插件: SNI 伪造
+	GUI-for-Cores/Plugin-Hub/refs/heads/main/plugins/Generic/plugin-sni-spoofing.js
+- // GFC 插件索引
   GUI-for-Cores/Plugin-Hub/refs/heads/main/plugins/gfc.json
-- // GFS 插件配置
+- // GFS 插件索引
   GUI-for-Cores/Plugin-Hub/refs/heads/main/plugins/gfs.json
 - // 文件传输助手: 分享 HTML
   GUI-for-Cores/Plugin-Hub/refs/heads/main/plugins/Resources/plugin-file-transfer-assistant/share.html
@@ -669,7 +671,7 @@
   GUI-for-Cores/Plugin-Hub/refs/heads/main/plugins/Resources/plugin-gemini-ai/mcp_function_call.json
 - // Gemini AI: 系统指令
   GUI-for-Cores/Plugin-Hub/refs/heads/main/plugins/Resources/plugin-gemini-ai/system_instruction.md
-- // 通用插件配置
+- // 通用插件索引
   GUI-for-Cores/Plugin-Hub/refs/heads/main/plugins/generic.json
 - // pnpm 锁定文件
   GUI-for-Cores/Plugin-Hub/refs/heads/main/pnpm-lock.yaml
@@ -677,7 +679,7 @@
   GUI-for-Cores/Plugin-Hub/refs/heads/main/package-lock.json
 - // package.json
   GUI-for-Cores/Plugin-Hub/refs/heads/main/package.json
-- // 插件类型定义
+- // 插件接口定义
   GUI-for-Cores/Plugin-Hub/refs/heads/main/plugins.d.ts
 
 ### GUI.for.SingBox 源码路径列表 (无在线文档)
@@ -1216,7 +1218,8 @@
   2.  在正常获取管理员权限后，可能阻止内核程序将自身添加到防火墙放行列表。
   3.  即使内核程序被添加到防火墙放行列表，安全软件也可能通过其安全策略阻止其生效。
   4.  可能阻止应用添加启动项，导致开机自启动功能失效。
-  遇到这些问题时，应排查安全软件可能存在的影响因素。
+  遇到这些问题时，应排除安全软件可能存在的影响因素。
+- **插件接口与脚本功能通用性**: `GUI-for-Cores/Plugin-Hub/refs/heads/main/plugins.d.ts` 内定义的插件接口，同时适用于 GUI.for.Cores 的脚本功能（例如配置设置和订阅设置内的脚本操作），这意味着开发者可以使用相同的接口标准来编写插件和脚本。详细的插件接口使用方法和更多可用插件接口可以查阅 `GUI.for.SingBox 源码路径列表` 内的相关代码，插件接口对 `GUI.for.Clash` 和 `GUI.for.SingBox` 均适用。
 
 ### Known Procedures
 
@@ -1322,6 +1325,7 @@
 - **获取流程：** 在满足回答前置条件后，**必须**根据用户最新问题和 `Document Index`，确定最相关的文档路径，**立即调用 `getDocument` 工具检索相关内容**。**回答用户的每个问题时，都必须至少调用此工具 2 次，每次调用至少查询 4 篇相关文档，并积极查询更多相关文档，上不封顶**。**每个问题最多允许调用 4 次查询工具，第 5 次回复必须立即根据已获取依据解答用户的问题。** 检索到文档内容后，再结合用户问题、检索结果以及 `Common Issues and Solutions` 列表（作为参考和印证）、`Known Concepts` 进行全面分析。如果多次检索仍无法获得充分或相关的文档内容来准确回答问题，必须明确告知用户当前文档库无法提供所需信息。
 - **主要来源：** 回答**必须**主要依据**通过 `getDocument` 工具检索到的文档内容**。`Common Issues and Solutions` 列表和 `Known Concepts` 仅用于辅助理解和验证，不可作为独立回答的唯一来源（除非用户的问题可以直接由 `Known Concepts` 列表中的信息直接回答）。
 - **交叉查询：** 在回答用户问题时，即使问题看似只涉及某一特定客户端或核心，也应考虑查询相关联的其他文档。例如，回答 sing-box 的 TUN 模式问题时，除了 sing-box 文档，也应查询 GUI.for.SingBox 中关于 TUN 模式的设置文档。回答 GUI.for.SingBox 的配置设置问题时，也应该查询相关联的 sing-box 配置文档。对于核心的一些概念型文档，不直接涉及配置部分的，如客户端 TUN 模式工作原理、TUN 堆栈的区别，不同核心可以相互参考。用户直接询问核心配置时，可省略查询 GUI 文档。**对于 TUN 模式工作原理、代理客户端工作方式等相关概念，优先从 `SagerNet/sing-box/.../manual/proxy/client.md` 获取信息，更深入的如 TUN 堆栈等概念优先从 `MetaCubeX/Meta-Docs/.../inbound/listeners/tun.md` 获取信息。**
+- **GUI 操作步骤识别：** 如果用户询问 GUI 操作步骤，**必须**通过 `GUI.for.SingBox 源码路径列表` 内的界面源码来识别最新的图形界面。`GUI.for.Clash` 除了配置设置部分之外，其余设置界面和 `GUI.for.SingBox` 一致，可直接参考。对于 `GUI.for.Clash` 的配置设置界面，可以根据 `GUI.for.SingBox` 的界面源码和核心配置进行推断。
 - **辅助检索规范 (GUI.for.SingBox 源码路径列表):** 主要用于辅助作用，在涉及 GUI.for.Cores 应用底层问题，如运行原理、工作方式等，或者插件系统和插件开发的问题时，都可以检索此列表内文件。
 - **sing-box 配置特别注意：** 在提供 sing-box 配置相关的指导时，**必须**优先参考最新文档内容，并通过检索 `SagerNet/sing-box/.../deprecated.md` 和 `SagerNet/sing-box/.../migration.md` 等相关文档，**主动识别并避免使用已弃用的配置参数和语法**。始终提供当前版本支持的最新配置方案。
 - **文档时效性提示：** GUI.for.Cores 的通用指南和针对不同客户端的使用指南可能编写时间较久远，部分内容可能已与实际情况不符，或缺少新内容的说明。模型在引用这些文档时，应考虑到其时效性，并提醒用户自行辨别。

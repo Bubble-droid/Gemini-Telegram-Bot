@@ -71,7 +71,6 @@ async function filesHandler(message, env) {
 				return null;
 			}
 		}
-		// 可以根据需要添加其他文件类型的处理 (如 audio, voice, sticker, animation, video_note)
 
 		// 如果没有支持的文件类型被处理
 		console.log('No supported file type found in message.');

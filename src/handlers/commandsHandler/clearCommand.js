@@ -41,7 +41,7 @@ async function handleClearCommand(message, env) {
 
 			const { message_id: successMessageId } = await bot.sendMessage({
 				chat_id: chatId,
-				text: 'Chat contents cleared successfully.',
+				text: '✅ 对话上下文清理成功！',
 				reply_to_message_id: replyToMessageId,
 			});
 

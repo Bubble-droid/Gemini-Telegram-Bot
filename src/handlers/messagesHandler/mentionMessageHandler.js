@@ -11,6 +11,15 @@ import sendFormattedMessage from '../../utils/messageFormatting/sendMessage';
 import { scheduleDeletion } from '../../utils/scheduler';
 
 /**
+ * 检查消息是否包含文件
+ * @param {object} message - Telegram 消息对象
+ * @returns {boolean} - 如果消息包含文件，返回 true
+ */
+function containsFile(message) {
+	return message.video || message.document || message.photo;
+}
+
+/**
  * 从消息中提取 Gemini API 的 parts 数组
  * @param {object} message - Telegram 消息对象
  * @param {object} env - Cloudflare Worker 环境变量
@@ -85,6 +94,9 @@ async function handleMentionMessage(message, env, isChat = false) {
 	const botName = config.botName;
 	const messageText = message.text || message.caption || ''; // Keep original text for mention check
 
+	const hasFileInCurrentMessage = containsFile(message);
+	const hasFileInReplyMessage = message.reply_to_message ? containsFile(message.reply_to_message) : false;
+
 	try {
 		// 检查是否提及 Bot
 		if (!messageText.includes(botName) && !isChat) {
@@ -128,29 +140,58 @@ async function handleMentionMessage(message, env, isChat = false) {
 			return true;
 		}
 
-		let askContents = []; // Array to hold contents for the Gemini API call
+		let uploadMessageId = null;
+		if (hasFileInCurrentMessage || hasFileInReplyMessage) {
+			const { message_id } = await bot.sendMessage({
+				chat_id: chatId,
+				text: '📄 File uploading...',
+				reply_to_message_id: replyToMessageId,
+			});
+			uploadMessageId = message_id;
+		}
 
-		// 处理 reply_to_message
-		if (message.reply_to_message) {
-			console.log('Handling reply_to_message...');
-			const replyParts = await extractMessageParts(message.reply_to_message, env, botName);
-			if (message.reply_to_message.from.username === botName.replace('@', '').trim()) {
-				isChat = true;
+		let askContents = []; // Array to hold contents for the Gemini API call
+		try {
+			// 处理 reply_to_message
+			if (message.reply_to_message) {
+				console.log('Handling reply_to_message...');
+				const replyParts = await extractMessageParts(message.reply_to_message, env, botName);
+				if (message.reply_to_message.from.username === botName.replace('@', '').trim()) {
+					isChat = true;
+				}
+				if (replyParts.length > 0) {
+					askContents.push({
+						role: isChat ? 'model' : 'user',
+						parts: replyParts,
+					});
+				}
 			}
-			if (replyParts.length > 0) {
+
+			// 处理当前消息
+			const currentParts = await extractMessageParts(message, env, botName, replyToMessageId);
+			if (currentParts.length > 0) {
 				askContents.push({
-					role: isChat ? 'model' : 'user',
-					parts: replyParts,
+					role: 'user',
+					parts: currentParts,
 				});
+			}
+		} catch (error) {
+			try {
+				if (uploadMessageId) {
+					await bot.deleteMessage({
+						chat_id: chatId,
+						message_id: uploadMessageId,
+					});
+				}
+			} finally {
+				throw error;
 			}
 		}
 
-		// 处理当前消息
-		const currentParts = await extractMessageParts(message, env, botName);
-		if (currentParts.length > 0) {
-			askContents.push({
-				role: 'user',
-				parts: currentParts,
+		if (uploadMessageId) {
+			await bot.deleteMessage({
+				chat_id: chatId,
+				message_id: uploadMessageId,
 			});
 		}
 
@@ -171,6 +212,13 @@ async function handleMentionMessage(message, env, isChat = false) {
 
 		try {
 			const response = await geminiApi.generateContent(contents);
+
+			if (thinkMessageId) {
+				await bot.deleteMessage({
+					chat_id: chatId,
+					message_id: thinkMessageId,
+				});
+			}
 
 			// console.log('Gemini API response:', JSON.stringify(response, null, 2));
 
@@ -200,21 +248,17 @@ async function handleMentionMessage(message, env, isChat = false) {
 
 			// 更新聊天记录，保存 askContents 和回复
 			await updateChatContents(env, chatId, userId, [...askContents, response]);
-
-			if (thinkMessageId) {
-				await bot.deleteMessage({
-					chat_id: chatId,
-					message_id: thinkMessageId,
-				});
-			}
 		} catch (error) {
-			if (thinkMessageId) {
-				await bot.deleteMessage({
-					chat_id: chatId,
-					message_id: thinkMessageId,
-				});
+			try {
+				if (thinkMessageId) {
+					await bot.deleteMessage({
+						chat_id: chatId,
+						message_id: thinkMessageId,
+					});
+				}
+			} finally {
+				throw error;
 			}
-			throw error;
 		}
 	} catch (error) {
 		console.error('Error handling mention message');
