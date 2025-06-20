@@ -229,7 +229,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 
 			const resTexts =
 				response.parts
-					.map((part) => part?.text)
+					.map((part) => part?.text.trim())
 					.join('')
 					.trim() || '';
 
@@ -238,7 +238,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 				throw new Error('Gemini API returned an empty response.');
 			}
 
-			const fullText = `${resTexts}\n\n------\n\n⚠️ AI 的回复可能与实际不符，请自行辨认！`;
+			const fullText = `${resTexts}\n\n------\n\n⚠️ AI 的回答无法保证百分百准确，请自行判断！`;
 
 			const { ok, error: sendError } = await sendFormattedMessage(env, chatId, fullText, replyToMessageId);
 

@@ -63,7 +63,7 @@ async function _sendSingleTelegramChunk(env, params) {
  * 优先使用 HTML 格式，失败则回退到 MarkdownV2，然后 Markdown (Legacy)，最后纯文本。
  * 对原始超长文本按 4000 字符分割，并尝试在分割点闭合常见的行内格式。
  *
- * @param {string} env - World Environment。
+ * @param {string} env - Cloudflare Worker 环境变量。
  * @param {number} chatId - 目标聊天 ID。
  * @param {string} standardMarkdownText - 标准 Markdown 格式的输入文本。
  * @param {number | null} replyToMessageId - (可选) 如果需要回复某条消息，则指定 message_id。
