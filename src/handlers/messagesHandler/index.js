@@ -65,13 +65,11 @@ async function messagesHandler(message, env) {
 		const bot = new TelegramBot(env);
 		const { message_id } = await bot.sendMessage({
 			chat_id: message?.chat?.id,
-			text: `❌ ${async () => {
-				if (regex.test(error.toString())) {
-					return '存储在 Gemini APi 的历史文件可能已过期，请尝试使用命令 /clear@boxTrial_bot 清理上下文后再提问';
-				} else {
-					return error.message || error;
-				}
-			}}`,
+			text: `❌ ${
+				regex.test(error.toString())
+					? '存储在 Gemini APi 的历史文件可能已过期，请尝试使用命令 /clear@boxTrial_bot 清理上下文后再提问'
+					: error.message || error
+			}`,
 			reply_to_message_id: message?.message_id,
 		});
 
