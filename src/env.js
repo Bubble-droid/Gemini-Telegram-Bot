@@ -16,6 +16,7 @@ const getConfig = (env) => {
 		'TELEGRAM_BOT_CONFIG',
 		'GROUP_CHAT_CONTENTS',
 		'API_RATE_LIMIT',
+		'GITHUB_TOKEN', // 添加 GitHub Token
 	];
 	for (const varName of requiredVars) {
 		if (!env[varName]) {
@@ -39,6 +40,7 @@ const getConfig = (env) => {
 		apiRateLimit: env.API_RATE_LIMIT,
 		maxContentsLength: Number(env.MAX_CONTENTS_LENGTH) || 10,
 		apiRequestInterval: Number(env.API_REQUEST_INTERVAL) || 1.0,
+		githubToken: env.GITHUB_TOKEN, // 添加 GitHub Token
 	};
 };
 

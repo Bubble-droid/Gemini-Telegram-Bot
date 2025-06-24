@@ -174,3 +174,6 @@ dist
 
 .dev.vars
 .wrangler/
+.roo/mcp.json
+draft/js.js
+draft/md.md

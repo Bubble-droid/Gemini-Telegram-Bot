@@ -8,22 +8,105 @@ const tools = [
 	{
 		functionDeclarations: [
 			{
-				name: 'getDocument',
-				description: '始终使用此工具，根据用户的提问和文档路径列表，查询相关的在线文档，获取解答依据',
+				name: 'getAssetsContent',
+				description: '根据提供的 GitHub 仓库文件路径列表，获取文件的原始内容。',
 				parameters: {
 					type: Type.OBJECT,
 					properties: {
-						docsPath: {
+						assetsPath: {
 							type: Type.ARRAY,
 							description:
-								'需要查询的文档路径列表，一个数组，例如: ["MetaCubeX/Meta-Docs/refs/heads/main/docs/api/index.md", "SagerNet/sing-box/refs/heads/dev-next/docs/configuration/experimental/clash-api.md", ...]',
+								'需要查询的文件路径列表，例如: ["MetaCubeX/Meta-docs/refs/heads/main/docs/api/index.md", "SagerNet/sing-box/refs/heads/dev-next/src/main.go", ...]',
 							items: {
 								type: Type.STRING,
-								description: '单个文档的路径',
+								description: '单个文件的完整路径，格式为 "owner/repo/refs/heads/branch/path/to/file.ext"',
 							},
 						},
 					},
-					required: ['docsPath'],
+					required: ['assetsPath'],
+				},
+			},
+			{
+				name: 'searchGitHubRepositoryFilesByKeyword',
+				description: '根据关键词在指定的 GitHub 仓库和路径中搜索文件内容，以获取相关文件路径。',
+				parameters: {
+					type: Type.OBJECT,
+					properties: {
+						keyword: {
+							type: Type.STRING,
+							description: '用于搜索文件内容的关键词，多个关键词请用空格分隔，例如 "路由 DNS"。',
+						},
+						owner: {
+							type: Type.STRING,
+							description: 'GitHub 仓库所有者，例如 "SagerNet"。',
+						},
+						repo: {
+							type: Type.STRING,
+							description: 'GitHub 仓库名称，例如 "sing-box"。',
+						},
+						path: {
+							type: Type.STRING,
+							description: '在仓库中搜索的路径，默认为仓库根目录。例如 "docs/" 或 "src/core/"。',
+							default: '',
+						},
+						branch: {
+							type: Type.STRING,
+							description: '要搜索的仓库分支，默认为仓库默认分支（如 main 或 master）。',
+							default: 'main',
+						},
+					},
+					required: ['keyword', 'owner', 'repo'],
+				},
+			},
+			{
+				name: 'listGitHubDirectoryContents',
+				description: '列出指定 GitHub 仓库、指定目录内的所有文件和子目录（单层）。此工具旨在辅助模型探索仓库文件结构。',
+				parameters: {
+					type: Type.OBJECT,
+					properties: {
+						owner: {
+							type: Type.STRING,
+							description: 'GitHub 仓库所有者，例如 "SagerNet"。',
+						},
+						repo: {
+							type: Type.STRING,
+							description: 'GitHub 仓库名称，例如 "sing-box"。',
+						},
+						path: {
+							type: Type.STRING,
+							description: '要列出文件和子目录的路径，默认为仓库根目录。例如 "docs/configuration/"。',
+							default: '',
+						},
+						branch: {
+							type: Type.STRING,
+							description: '要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
+							default: 'main',
+						},
+					},
+					required: ['owner', 'repo'],
+				},
+			},
+			{
+				name: 'listGitHubRepositoryTree',
+				description: '递归列出指定 GitHub 仓库和分支下的所有文件及其完整路径。此工具旨在辅助模型获取仓库的完整文件结构，用于深度分析。',
+				parameters: {
+					type: Type.OBJECT,
+					properties: {
+						owner: {
+							type: Type.STRING,
+							description: 'GitHub 仓库所有者，例如 "SagerNet"。',
+						},
+						repo: {
+							type: Type.STRING,
+							description: 'GitHub 仓库名称，例如 "sing-box"。',
+						},
+						branch: {
+							type: Type.STRING,
+							description: '要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
+							default: 'main',
+						},
+					},
+					required: ['owner', 'repo'],
 				},
 			},
 		],
@@ -36,51 +119,277 @@ const tools = [
  */
 const toolExecutors = {
 	/**
-	 * 执行 getDocument 工具
-	 * @param {object} args  工具调用时传递的参数对象，例如 { docsPath: ['path1', 'path2'] }
+	 * 执行 getAssetsContent 工具
+	 * @param {object} args  工具调用时传递的参数对象，例如 { assetsPath: ['path1', 'path2'] }
 	 * @returns {Promise<object>}  工具执行结果对象，包含 content 字段
 	 */
-	getDocument: async (args) => {
-		console.log('执行工具: getDocument, 参数:', args);
-		const docUrlPrefix = 'https://raw.githubusercontent.com';
-		let docstxt = '';
-		if (args && args.docsPath && Array.isArray(args.docsPath)) {
-			for (const doc of args.docsPath) {
-				if (typeof doc === 'string') {
-					const completeDocUrl = `${docUrlPrefix}/${doc}`;
-					const docName = doc.split('/').slice(-2);
+	getAssetsContent: async (args) => {
+		console.log('执行工具: getAssetsContent, 参数:', args);
+		const assetsUrlPrefix = 'https://raw.githubusercontent.com';
+		const githubToken = toolExecutors.githubToken;
+		let assetstxt = '';
+		if (args && args.assetsPath && Array.isArray(args.assetsPath)) {
+			for (const asset of args.assetsPath) {
+				if (typeof asset === 'string') {
+					const completeassetUrl = `${assetsUrlPrefix}/${asset}`;
+					// 从路径中提取 repo/branch/file.ext 作为文档名称的简写
+					const assetNameParts = asset.split('/');
+					const repoName = assetNameParts[1]; // 例如 'Meta-assets'
+					const branchName = assetNameParts[3]; // 例如 'main'
+					const fileName = assetNameParts
+						.slice(4)
+						.join('_')
+						.replace(/\.[^/.]+$/, ''); // 移除文件后缀
+					const assetIdentifier = `${repoName}_${branchName}_${fileName}`;
+
 					try {
-						console.log(`尝试获取文档: ${completeDocUrl}`);
-						const response = await fetch(completeDocUrl, {
+						console.log(`尝试获取文件: ${completeassetUrl}`);
+						const response = await fetch(completeassetUrl, {
 							method: 'GET',
+							headers: {
+								Authorization: `Bearer ${githubToken}`,
+								'User-Agent': 'Gemini-Telegram-Bot',
+							},
 						});
 
 						if (!response.ok) {
-							console.warn(`获取文档失败，状态码: ${response.status}, URL: ${completeDocUrl}`);
-							docstxt += `#${doc}\n\n错误：无法获取文档内容 (状态码: ${response.status})\n`; // 添加错误提示到结果中
+							console.warn(`获取文件失败，状态码: ${response.status}, URL: ${completeassetUrl}`);
+							assetstxt += `#<document_${assetIdentifier}>\n<path>${asset}</path>\n<content>\n错误：无法获取文件内容 (状态码: ${response.status})\n</content>\n</document_${assetIdentifier}>\n\n`; // 添加错误提示到结果中
 							continue; // 继续处理下一个文档
 						}
 
-						const docContent = await response.text();
-						docstxt += `<document_${docName.join(
-							'_'
-						)}>\n<path>${doc}</path>\n<content>\n${docContent}\n</content>\n</document_${docName.join('_')}>\n\n`; // 文档内容之间用空行隔开
+						const assetContent = await response.text();
+						assetstxt += `<document_${assetIdentifier}>\n<path>${asset}</path>\n<content>\n${assetContent}\n</content>\n</document_${assetIdentifier}>\n\n`; // 文档内容之间用空行隔开
 					} catch (fetchError) {
-						console.error(`获取文档时发生网络错误: ${fetchError}, URL: ${completeDocUrl}`);
-						docstxt += `<document_${docName.join(
-							'_'
-						)}>\n<path>${doc}</path>\n<content>\n错误：获取文档时发生网络错误\n</content>\n</document_${docName.join('_')}>\n\n`; // 添加错误提示到结果中
+						console.error(`获取文件时发生网络错误: ${fetchError}, URL: ${completeassetUrl}`);
+						assetstxt += `<document_${assetIdentifier}>\n<path>${asset}</path>\n<content>\n错误：获取文件时发生网络错误 - ${
+							fetchError.message || '未知错误'
+						}\n</content>\n</document_${assetIdentifier}>\n\n`; // 添加错误提示到结果中
 					}
 				}
 			}
 		} else {
-			console.warn('getDocument 工具调用参数无效:', args);
-			docstxt = '错误：getDocument 工具调用参数无效，未提供文档路径。';
+			console.warn('getAssetsContent 工具调用参数无效:', args);
+			assetstxt = '错误：getAssetsContent 工具调用参数无效，未提供文件路径。';
 		}
-		console.log('getDocument 工具执行完毕，结果长度:', docstxt.length);
-		// Gemini SDK 的 functionResponse 需要一个 response 对象，通常包含结果
-		// 格式应为 { output: '...' }
-		return { output: docstxt.trim() }; // 返回包含结果的对象，使用 output 字段
+		console.log('getAssetsContent 工具执行完毕，结果长度:', assetstxt.length);
+		return { output: assetstxt.trim() }; // 返回包含结果的对象，使用 output 字段
+	},
+	/**
+	 * 执行 searchGitHubRepositoryFilesByKeyword 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { keyword: 'resolve', owner: 'SagerNet', repo: 'sing-box', path: 'assets/', branch: 'main' }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是找到的文件路径列表
+	 */
+	searchGitHubRepositoryFilesByKeyword: async (args) => {
+		console.log('执行工具: searchGitHubRepositoryFilesByKeyword, 参数:', args);
+		const { keyword, owner, repo, path = '', branch = 'main' } = args; // 默认分支为 'main'
+		const githubToken = toolExecutors.githubToken; // 从 toolExecutors 获取 githubToken
+
+		if (!keyword || !owner || !repo) {
+			console.warn('searchGitHubRepositoryFilesByKeyword 工具调用参数无效:', args);
+			return { output: '错误：searchGitHubRepositoryFilesByKeyword 工具调用参数无效，缺少关键词、仓库所有者或仓库名称。' };
+		}
+
+		if (!githubToken) {
+			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索。');
+			return { output: '错误：GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索。' };
+		}
+
+		// 构建 GitHub API 搜索 URL，包含 branch 参数
+		// q=Keywords+in:file+repo:Owner/Repo+path:PATH/TO&ref:Branch
+		const apiUrl = `https://api.github.com/search/code?q=${encodeURIComponent(keyword)}+in:file+repo:${encodeURIComponent(
+			`${owner}/${repo}`
+		)}${path ? `+path:${encodeURIComponent(path)}` : ''}&ref=${encodeURIComponent(branch)}`;
+
+		try {
+			console.log(`尝试通过 GitHub API 搜索文件: ${apiUrl}`);
+			const response = await fetch(apiUrl, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/vnd.github+json',
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot', // GitHub API 要求 User-Agent
+				},
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.warn(`GitHub API 搜索文件失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`);
+				return { output: `错误：GitHub API 搜索文件失败 (状态码: ${response.status}) - ${errorText}` };
+			}
+
+			const data = await response.json();
+			const foundFiles = [];
+
+			if (data.items && Array.isArray(data.items)) {
+				for (const item of data.items) {
+					// 构建完整的文档路径，格式为 "owner/repo/refs/heads/branch/path/to/asset.md"
+					const repoFullName = item.repository.full_name;
+					// item.path 已经是相对于仓库根目录的路径
+					foundFiles.push(`${repoFullName}/refs/heads/${branch}/${item.path}`);
+				}
+			}
+			console.log(`searchGitHubRepositoryFilesByKeyword 工具执行完毕，找到 ${foundFiles.length} 个文件。`);
+			return { output: foundFiles };
+		} catch (fetchError) {
+			console.error(`GitHub API 搜索文件时发生网络错误: ${fetchError}, URL: ${apiUrl}`);
+			return { output: `错误：GitHub API 搜索文件时发生网络错误 - ${fetchError.message || '未知错误'}` };
+		}
+	},
+
+	/**
+	 * 执行 listGitHubDirectoryContents 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box', path: 'docs/', branch: 'dev-next' }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是文件和目录列表
+	 */
+	listGitHubDirectoryContents: async (args) => {
+		console.log('执行工具: listGitHubDirectoryContents, 参数:', args);
+		const { owner, repo, path = '', branch = 'main' } = args;
+		const githubToken = toolExecutors.githubToken; // 从 toolExecutors 获取 githubToken
+
+		if (!owner || !repo) {
+			console.warn('listGitHubDirectoryContents 工具调用参数无效:', args);
+			return { output: '错误：listGitHubDirectoryContents 工具调用参数无效，缺少仓库所有者或仓库名称。' };
+		}
+
+		if (!githubToken) {
+			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
+			return { output: '错误：GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
+		}
+
+		// 确保 path 不以斜杠开头，如果 path 为空则不需要处理
+		const cleanedPath = path.startsWith('/') ? path.substring(1) : path;
+		const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(
+			cleanedPath
+		)}?ref=${encodeURIComponent(branch)}`;
+
+		try {
+			console.log(`尝试通过 GitHub API 列出目录内容: ${apiUrl}`);
+			const response = await fetch(apiUrl, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/vnd.github.v3+json',
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot', // GitHub API 要求 User-Agent
+				},
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.warn(`GitHub API 列出目录内容失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`);
+				return { output: `错误：GitHub API 列出目录内容失败 (状态码: ${response.status}) - ${errorText}` };
+			}
+
+			const data = await response.json();
+			const fileList = [];
+
+			if (Array.isArray(data)) {
+				for (const item of data) {
+					// 构建完整的 GitHub 文件路径，格式为 "owner/repo/refs/heads/branch/path/to/file.ext"
+					// item.path 已经是相对于仓库根目录的路径
+					const fullPath = `${owner}/${repo}/refs/heads/${branch}/${item.path}`;
+					fileList.push({
+						name: item.name,
+						path: fullPath,
+						type: item.type, // 'file' or 'dir'
+					});
+				}
+			}
+			console.log(`listGitHubDirectoryContents 工具执行完毕，找到 ${fileList.length} 个文件/目录。`);
+			return { output: fileList };
+		} catch (fetchError) {
+			console.error(`GitHub API 列出目录内容时发生网络错误: ${fetchError}, URL: ${apiUrl}`);
+			return { output: `错误：GitHub API 列出目录内容时发生网络错误 - ${fetchError.message || '未知错误'}` };
+		}
+	},
+
+	/**
+	 * 执行 listGitHubRepositoryTree 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box', branch: 'dev-next' }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是文件列表
+	 */
+	listGitHubRepositoryTree: async (args) => {
+		console.log('执行工具: listGitHubRepositoryTree, 参数:', args);
+		const { owner, repo, branch = 'main' } = args;
+		const githubToken = toolExecutors.githubToken; // 从 toolExecutors 获取 githubToken
+
+		if (!owner || !repo) {
+			console.warn('listGitHubRepositoryTree 工具调用参数无效:', args);
+			return { output: '错误：listGitHubRepositoryTree 工具调用参数无效，缺少仓库所有者或仓库名称。' };
+		}
+
+		if (!githubToken) {
+			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
+			return { output: '错误：GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
+		}
+
+		try {
+			// 1. 获取分支的最新 commit SHA
+			const branchApiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(
+				repo
+			)}/branches/${encodeURIComponent(branch)}`;
+			console.log(`尝试获取分支信息: ${branchApiUrl}`);
+			const branchResponse = await fetch(branchApiUrl, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/vnd.github.v3+json',
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot',
+				},
+			});
+
+			if (!branchResponse.ok) {
+				const errorText = await branchResponse.text();
+				console.warn(`获取分支信息失败，状态码: ${branchResponse.status}, 错误: ${errorText}, URL: ${branchApiUrl}`);
+				return { output: `错误：获取分支信息失败 (状态码: ${branchResponse.status}) - ${errorText}` };
+			}
+			const branchData = await branchResponse.json();
+			const treeSha = branchData.commit.sha;
+			console.log(`获取到分支 ${branch} 的 tree SHA: ${treeSha}`);
+
+			// 2. 使用 tree SHA 递归获取仓库文件树
+			const treeApiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(
+				repo
+			)}/git/trees/${encodeURIComponent(treeSha)}?recursive=1`;
+			console.log(`尝试递归获取仓库文件树: ${treeApiUrl}`);
+			const treeResponse = await fetch(treeApiUrl, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/vnd.github.v3+json',
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot',
+				},
+			});
+
+			if (!treeResponse.ok) {
+				const errorText = await treeResponse.text();
+				console.warn(`递归获取仓库文件树失败，状态码: ${treeResponse.status}, 错误: ${errorText}, URL: ${treeApiUrl}`);
+				return { output: `错误：递归获取仓库文件树失败 (状态码: ${treeResponse.status}) - ${errorText}` };
+			}
+
+			const treeData = await treeResponse.json();
+			const fileList = [];
+
+			if (treeData.tree && Array.isArray(treeData.tree)) {
+				for (const item of treeData.tree) {
+					if (item.type === 'blob') {
+						// type 'blob' 表示文件
+						// 构建完整的 GitHub 文件路径
+						const fullPath = `${owner}/${repo}/refs/heads/${branch}/${item.path}`;
+						fileList.push({
+							name: item.path.split('/').pop(), // 文件名
+							path: fullPath,
+							type: 'file',
+						});
+					}
+				}
+			}
+			console.log(`listGitHubRepositoryTree 工具执行完毕，找到 ${fileList.length} 个文件。`);
+			return { output: fileList };
+		} catch (fetchError) {
+			console.error(`GitHub API 列出仓库文件树时发生网络错误: ${fetchError}, URL: ${fetchError.url || '未知'}`);
+			return { output: `错误：GitHub API 列出仓库文件树时发生网络错误 - ${fetchError.message || '未知错误'}` };
+		}
 	},
 };
 
@@ -100,14 +409,10 @@ class GeminiApi {
 		this.env = env;
 		this.tools = tools;
 		this.toolExecutors = toolExecutors;
-		this.MAX_TOOL_CALL_ROUNDS = 6; // 最大工具调用轮次
+		this.toolExecutors.githubToken = config.githubToken; // 将 githubToken 传递给工具执行器
+		this.MAX_TOOL_CALL_ROUNDS = 8; // 最大工具调用轮次
 	}
 
-	/**
-	 * 调用 Gemini API 进行对话或生成内容
-	 * @param {Array<object>} contents - 对话历史记录 (格式取决于 Gemini SDK)
-	 * @returns {Promise<object|null>} Gemini API 的响应对象，包含文本。如果发生错误则返回 null。
-	 */
 	/**
 	 * 调用 Gemini API 进行对话或生成内容，支持工具调用
 	 * @param {Array<object>} initialContents - 初始对话历史记录 (格式取决于 Gemini SDK)
@@ -133,9 +438,9 @@ class GeminiApi {
 		const baseConfig = {
 			maxOutputTokens: 65536,
 			temperature: 0.3,
-			thinkingConfig: {
-				thinkingBudget: 24576,
-			},
+			// thinkingConfig: {
+			// 	thinkingBudget: 24576,
+			// },
 			tools: tools,
 			toolConfig: {
 				functionCallingConfig: {

@@ -32,7 +32,8 @@
 		"KV_EXPIRATION_TTL": "604800", // Seconds
 		// "ALLOWED_GROUP_IDS": "123,321", // Not yet implemented
 		"MAX_CONTENTS_LENGTH": "10", // Integer
-		"API_REQUEST_INTERVAL": "1.0" // Minutes
+		"API_REQUEST_INTERVAL": "1.0", // Minutes
+		"GITHUB_TOKEN": "YOUR_GITHUB_TOKEN" // 具备公共仓库访问权限
 	},
 	// npx wrangler kv namespace create xxx
 	"kv_namespaces": [

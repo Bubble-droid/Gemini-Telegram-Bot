@@ -1,6 +1,42 @@
 {
-	"files.associations": {
-		"wrangler.jsonc": "jsonc"
-	},
-	"cSpell.words": ["docstxt", "genai", "KHTML"]
+	"cSpell.words": [
+		"adguardhome",
+		"alist",
+		"aliyunpan",
+		"anytls",
+		"assetstxt",
+		"chika",
+		"completeasset",
+		"docstxt",
+		"fakeip",
+		"genai",
+		"geoip",
+		"geolocation",
+		"geox",
+		"KHTML",
+		"metacubexd",
+		"mihomo",
+		"mmdb",
+		"Noto",
+		"Outbounds",
+		"quic",
+		"Scamalytics",
+		"scheduledtasks",
+		"Shadowsocks",
+		"shadowtls",
+		"singbox",
+		"systemproxy",
+		"tproxy",
+		"TUIC",
+		"tunnelvision",
+		"unblockneteasemusic",
+		"Upgrader",
+		"urltest",
+		"VLESS",
+		"vmess",
+		"wailsjs",
+		"webdav",
+		"Wintun",
+		"Yacd"
+	]
 }
