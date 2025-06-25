@@ -2,7 +2,7 @@
 
 import getConfig from '../../env';
 import TelegramBot from '../../api/TelegramBot';
-import GeminiApi from '../../api/GeminiApi';
+import GeminiApi from '../../api/GeminiAPI';
 import rateLimiterCheck from '../../utils/rateLimiter';
 import filesHandler from '../filesHandler';
 import getChatContents from '../../chatContents/getChatContents';
@@ -111,7 +111,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 			chat: { id: chatId },
 		} = message;
 
-		if (!messageText.replace(botName, '').trim() && !message.reply_to_message) {
+		if (!messageText.replace(botName, '').trim() && !hasFileInCurrentMessage && !message.reply_to_message) {
 			console.log('No valid content to send to Gemini API.');
 			const { message_id } = await bot.sendMessage({
 				chat_id: chatId,

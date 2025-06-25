@@ -13,20 +13,24 @@ import TelegramBot from '../../api/TelegramBot';
  * @param {object} env - Cloudflare Worker 的环境变量对象。
  * @returns {Promise<object|null>} 成功上传到 Gemini 的文件对象，如果处理失败则返回 null。
  */
-async function uploadFileToGemini(fileId, fileName, mimeType, env) {
+async function uploadFileToGemini(fileId, fileName, mimeType, env, isToolExec = false, toolExecArgs) {
 	const config = getConfig(env);
 	const bot = new TelegramBot(env);
 	const ai = new GoogleGenAI({ apiKey: config.apiKey });
 
 	try {
-		// 1. 使用 Telegram Bot API 的 getFile 方法获取文件路径
-		const file = await bot.getFile(fileId);
-		if (!file || !file.file_path) {
-			console.error(`Failed to get file path for file_id: ${fileId}`);
-			return null;
+		let fileUrl = '';
+		if (!isToolExec) {
+			// 1. 使用 Telegram Bot API 的 getFile 方法获取文件路径
+			const file = await bot.getFile(fileId);
+			if (!file || !file.file_path) {
+				console.error(`Failed to get file path for file_id: ${fileId}`);
+				return null;
+			}
+			fileUrl = `https://api.telegram.org/file/bot${config.botToken}/${file.file_path}`;
+		} else {
+			fileUrl = toolExecArgs.fileUrl;
 		}
-
-		const fileUrl = `https://api.telegram.org/file/bot${config.botToken}/${file.file_path}`;
 		console.log(`Downloading file from: ${fileUrl}`);
 
 		// 2. 使用 downloadFileAsArrayBuffer 下载文件
@@ -39,10 +43,10 @@ async function uploadFileToGemini(fileId, fileName, mimeType, env) {
 		// 3. 将文件上传到 Gemini
 		console.log('Uploading file to Gemini...');
 		const uploadedFile = await ai.files.upload({
-			file: new Blob([fileArrayBuffer], { type: mimeType }),
+			file: new Blob([fileArrayBuffer], { type: isToolExec ? toolExecArgs.mimeType : mimeType }),
 			config: {
-				displayName: fileName,
-				mimeType: mimeType,
+				displayName: isToolExec ? toolExecArgs.fileName : fileName,
+				mimeType: isToolExec ? toolExecArgs.mimeType : mimeType,
 			},
 		});
 		console.log(`Upload initiated. File name: ${uploadedFile.name}, State: ${uploadedFile.state}`);
