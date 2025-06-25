@@ -768,9 +768,12 @@ class GeminiApi {
 			],
 		};
 
+		const MAX_RETRIES = 3; // 定义最大重试次数
+		let retryCount = 0; // 初始化重试计数
+
 		// 循环处理，直到 API 返回最终回复而不是工具调用
 		for (let i = 0; i < this.MAX_TOOL_CALL_ROUNDS; i++) {
-			console.log(`API 调用轮次: ${i + 1}`);
+			console.log(`API 调用轮次: ${i + 1}, 重试次数: ${retryCount}`);
 			console.log('当前发送的 contents:', JSON.stringify(contents, null, 2)); // 打印完整的 contents 可能非常长，谨慎使用
 
 			try {
@@ -787,8 +790,18 @@ class GeminiApi {
 
 				if (!candidate || !candidate.content || !candidate.content.parts) {
 					console.warn('Gemini API 返回结果不包含有效的 candidate 或 content:', JSON.stringify(response, null, 2));
-					throw new Error('Gemini API 未返回有效结果');
+					if (retryCount < MAX_RETRIES) {
+						retryCount++;
+						console.log(`Gemini API 响应为空，进行第 ${retryCount} 次重试...`);
+						await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount)); // 每次重试间隔递增
+						continue; // 继续下一次循环，进行重试
+					} else {
+						throw new Error(`Gemini API 未返回有效结果，已达最大重试次数 (${MAX_RETRIES})`);
+					}
 				}
+
+				// 重置重试计数，因为成功获取到有效响应
+				retryCount = 0;
 
 				const parts = candidate.content.parts;
 				const functionCalls = parts.filter((part) => part.functionCall);
