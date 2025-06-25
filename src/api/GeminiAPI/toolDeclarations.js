@@ -195,83 +195,83 @@ const tools = [
 					required: ['owner', 'repo'],
 				},
 			},
+			{
+				name: 'getGitHubCommitDetails',
+				description: '获取指定 GitHub 仓库中某个提交的详细信息。',
+				parameters: {
+					type: Type.OBJECT,
+					properties: {
+						owner: {
+							type: Type.STRING,
+							description: 'GitHub 仓库所有者，例如 "SagerNet"。',
+						},
+						repo: {
+							type: Type.STRING,
+							description: 'GitHub 仓库名称，例如 "sing-box"。',
+						},
+						commit_sha: {
+							type: Type.STRING,
+							description: '要查询的提交的 SHA 值，例如 "2464ced48c504eb0dee616c6d474813621779afc"。',
+						},
+					},
+					required: ['owner', 'repo', 'commit_sha'],
+				},
+			},
+			{
+				name: 'getGitHubRepositoryReleases',
+				description: '获取指定 GitHub 仓库的最新稳定发布版本（Latest Release）和最新预发布版本（Latest Pre-release）信息。',
+				parameters: {
+					type: Type.OBJECT,
+					properties: {
+						owner: {
+							type: Type.STRING,
+							description: 'GitHub 仓库所有者，例如 "SagerNet"。',
+						},
+						repo: {
+							type: Type.STRING,
+							description: 'GitHub 仓库名称，例如 "sing-box"。',
+						},
+					},
+					required: ['owner', 'repo'],
+				},
+			},
+			{
+				name: 'getYoutubeVideoLink',
+				description: '获取 YouTube 视频链接，如果用户提供了有效的 YouTube 视频链接。',
+				parameters: {
+					type: Type.OBJECT,
+					properties: {
+						videoUrl: {
+							type: Type.STRING,
+							description: 'YouTube 视频的完整 URL，例如 "https://www.youtube.com/watch?v=9hE5-98ZeCg"。',
+						},
+					},
+					required: ['videoUrl'],
+				},
+			},
+			{
+				name: 'getOnlineMediaFile',
+				description: '获取在线媒体文件（例如图片、视频），此工具适用于处理用户提供的在线媒体链接。',
+				parameters: {
+					type: Type.OBJECT,
+					properties: {
+						fileUrl: {
+							type: Type.STRING,
+							description: '在线媒体文件的完整URL，例如 "https://example.com/image.jpg"。',
+						},
+						fileName: {
+							type: Type.STRING,
+							description: '文件的名称，例如 "my_image.jpg"。',
+						},
+						mimeType: {
+							type: Type.STRING,
+							description: '文件的MIME类型，例如 "image/jpeg"、"image/png"、"image/gif"、"video/mp4" 等。',
+						},
+					},
+					required: ['fileUrl', 'fileName', 'mimeType'],
+				},
+			},
 		],
-	},
-	{
-		name: 'getGitHubCommitDetails',
-		description: '获取指定 GitHub 仓库中某个提交的详细信息。',
-		parameters: {
-			type: Type.OBJECT,
-			properties: {
-				owner: {
-					type: Type.STRING,
-					description: 'GitHub 仓库所有者，例如 "SagerNet"。',
-				},
-				repo: {
-					type: Type.STRING,
-					description: 'GitHub 仓库名称，例如 "sing-box"。',
-				},
-				commit_sha: {
-					type: Type.STRING,
-					description: '要查询的提交的 SHA 值，例如 "2464ced48c504eb0dee616c6d474813621779afc"。',
-				},
-			},
-			required: ['owner', 'repo', 'commit_sha'],
-		},
-	},
-	{
-		name: 'getGitHubRepositoryReleases',
-		description: '获取指定 GitHub 仓库的最新稳定发布版本（Latest Release）和最新预发布版本（Latest Pre-release）信息。',
-		parameters: {
-			type: Type.OBJECT,
-			properties: {
-				owner: {
-					type: Type.STRING,
-					description: 'GitHub 仓库所有者，例如 "SagerNet"。',
-				},
-				repo: {
-					type: Type.STRING,
-					description: 'GitHub 仓库名称，例如 "sing-box"。',
-				},
-			},
-			required: ['owner', 'repo'],
-		},
-	},
-	{
-		name: 'getYoutubeVideoLink',
-		description: '获取 YouTube 视频链接，如果用户提供了有效的 YouTube 视频链接。',
-		parameters: {
-			type: Type.OBJECT,
-			properties: {
-				videoUrl: {
-					type: Type.STRING,
-					description: 'YouTube 视频的完整 URL，例如 "https://www.youtube.com/watch?v=9hE5-98ZeCg"。',
-				},
-			},
-			required: ['videoUrl'],
-		},
-	},
-	{
-		name: 'getOnlineMediaFile',
-		description: '获取在线媒体文件（例如图片、视频），此工具适用于处理用户提供的在线媒体链接。',
-		parameters: {
-			type: Type.OBJECT,
-			properties: {
-				fileUrl: {
-					type: Type.STRING,
-					description: '在线媒体文件的完整URL，例如 "https://example.com/image.jpg"。',
-				},
-				fileName: {
-					type: Type.STRING,
-					description: '文件的名称，例如 "my_image.jpg"。',
-				},
-				mimeType: {
-					type: Type.STRING,
-					description: '文件的MIME类型，例如 "image/jpeg"、"image/png"、"image/gif"、"video/mp4" 等。',
-				},
-			},
-			required: ['fileUrl', 'fileName', 'mimeType'],
-		},
 	},
 ];
 

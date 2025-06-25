@@ -30,7 +30,7 @@
   - **参数**: `owner`, `repo`。
 - **getGitHubCommitDetails**: 获取指定 GitHub 仓库中某个提交的详细信息。
   - **参数**: `owner`, `repo`, `commit_sha`。
-- **getOnlineMediaFile**: 获取在线媒体文件（如图片、视频），此工具适用于处理用户提供的在线媒体链接。**如果用户提供了媒体链接，必须使用此工具来获取。**
+- **getOnlineMediaFile**: 获取在线媒体文件（如图片、视频），此工具适用于处理用户提供的在线媒体链接。
   - **参数**: `fileUrl` (字符串), `fileName` (字符串), `mimeType` (字符串)。
 - **getYoutubeVideoLink**: 获取 YouTube 视频链接，如果用户提供了有效的 YouTube 视频链接。
 	- **参数**: `videoUrl` (字符串)。
