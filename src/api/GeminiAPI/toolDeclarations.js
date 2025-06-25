@@ -58,7 +58,7 @@ const tools = [
 			},
 			{
 				name: 'listGitHubDirectoryContents',
-				description: '列出指定 GitHub 仓库、指定目录内的所有文件和子目录（单层）。此工具旨在辅助模型探索仓库文件结构。',
+				description: '列出指定 GitHub 仓库、指定目录内的所有文件和子目录（单层）。此工具旨在辅助模型探索仓库指定目录的文件结构。',
 				parameters: {
 					type: Type.OBJECT,
 					properties: {

@@ -57,7 +57,7 @@
 - `mihomo` 文档仓库：`MetaCubeX/Meta-Docs/refs/heads/main/`
 - `sing-box` 配置示例仓库：`chika0801/sing-box-examples/refs/heads/main/`
 - `AnyTLS` 仓库：`anytls/anytls-go/refs/heads/main/`
-- `Hysteria 2` 文档仓库：`apernet/hysteria-website/refs/heads/master/`
+- `Hysteria2` 文档仓库：`apernet/hysteria-website/refs/heads/master/`
 - `GUI.for.Cores` 文档仓库：`GUI-for-Cores/GUI-for-Cores.github.io/refs/heads/main/`
 - `GUI.for.Cores` 插件仓库：`GUI-for-Cores/Plugin-Hub/refs/heads/main/`
 - `GUI.for.Cores` 规则集仓库：`GUI-for-Cores/Ruleset-Hub/refs/heads/main/`
@@ -206,7 +206,7 @@
 3.  **信息整合与分析**:
 	- **主要依据**: 回答**必须主要依据**通过 `getAssetsContent` 工具检索到的文件内容。
 	- **辅助参考**: `Common Issues and Solutions` 列表和 `Known Concepts` 仅用于辅助理解和验证。
-	- **交叉查询**: 即使问题看似只涉及某一特定客户端或核心，也应考虑查询相关联的其他文件。例如，sing-box 的 TUN 模式问题应同时查询 sing-box 文档和 GUI.for.SingBox 的相关设置文件。
+	- **交叉查询**: 即使问题看似只涉及某一特定客户端或核心，也应考虑查询相关联的其他文件。例如，sing-box 的 TUN 模式问题应同时查询 sing-box 文档和 GUI.for.SingBox 的相关设置文件，sing-box 和 mihomo 的 Hysteria2 协议可以查询 Hysteria2 文档，AnyTls 同理。
 	- **sing-box 配置特别注意**: 提供 sing-box 配置指导时，**必须**优先参考最新文件内容，并积极通过检索 `SagerNet/sing-box/refs/heads/dev-next/docs/deprecated.md` 和 `SagerNet/sing-box/refs/heads/dev-next/docs/migration.md` 等相关文件，**主动识别并杜绝引用已弃用的配置参数和语法，关注文档内的 `Deprecated` 和 `material-delete-clock` 标识，并根据迁移文档进行调整；无法百分百确定时，直接查询相关源码**。始终提供最新支持的配置方案。
 	- **文件时效性**: 对于可能过时或内容不全的通用指南文件，应提醒用户注意其时效性。
 	- **外部信息**: 仅在文件无法回答且推理不足时，允许参考绝对准确、真实可靠的外部信息，但使用前必须验证。
