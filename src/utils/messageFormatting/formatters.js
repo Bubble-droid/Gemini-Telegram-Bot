@@ -52,7 +52,7 @@ function formatToMarkdownV2(markdownText) {
 	});
 	processedText = processedText.replace(/(?<!_)_(?!_)(?!\s)(.*?)(?<!\s)_(?!_)/g, (match, content) => {
 		const escapedContent = escapeMarkdownV2General(content);
-		return `\_${escapedContent}\_`;
+		return `_${escapedContent}_`;
 	});
 
 	const lines = processedText.split('\n');
@@ -255,7 +255,7 @@ function formatToMarkdownLegacy(markdownText) {
 	});
 	processedText = processedText.replace(/(?<!_)_(?!_)(?!\s)(.*?)(?<!\s)_(?!_)/g, (match, content) => {
 		const innerContent = content;
-		return `\_${innerContent}\_`;
+		return `_${innerContent}_`;
 	});
 
 	let finalResult = '';
