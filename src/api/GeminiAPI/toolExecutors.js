@@ -8,46 +8,6 @@ import uploadFileToGemini from '../../handlers/filesHandler/geminiFileProcessor'
  */
 const toolExecutors = {
 	/**
-	 * 执行 getOnlineMediaFile 工具
-	 * @param {object} args - 工具调用时传递的参数对象，例如 { fileUrl: '...', fileName: '...', mimeType: '...' }
-	 * @returns {Promise<object>} - 工具执行结果对象，包含 fileData 字段，用于直接作为 Gemini 的文件内容。
-	 */
-	getOnlineMediaFile: async (args) => {
-		console.log('执行工具: getOnlineMediaFile, 参数:', args);
-		const { fileUrl, fileName, mimeType } = args;
-
-		if (!fileUrl || !fileName || !mimeType) {
-			console.warn('getOnlineMediaFile 工具调用参数无效: 缺少 fileUrl, fileName 或 mimeType。');
-			return { error: 'getOnlineMediaFile 工具调用参数无效，缺少必要参数。' };
-		}
-
-		try {
-			// 调用 uploadFileToGemini 上传文件，并标记为工具执行
-			const mediaFile = await uploadFileToGemini(null, null, null, toolExecutors.env, true, {
-				fileUrl,
-				fileName,
-				mimeType,
-			});
-			if (mediaFile && mediaFile.uri && mediaFile.mimeType) {
-				console.log(`在线媒体文件 ${fileName} 上传成功，URI: ${mediaFile.uri}`);
-				// 返回符合 Gemini API 期望的 fileData 格式
-				return {
-					fileData: {
-						fileUri: mediaFile.uri,
-						mimeType: mediaFile.mimeType,
-					},
-				};
-			} else {
-				console.warn('上传在线媒体文件到 Gemini 失败。');
-				return { error: '上传在线媒体文件到 Gemini 失败。' };
-			}
-		} catch (error) {
-			console.warn(`执行 getOnlineMediaFile 失败: ${error.message}`);
-			return { error: `执行 getOnlineMediaFile 失败 - ${error.message || '未知错误'}` };
-		}
-	},
-
-	/**
 	 * 执行 getAssetsContent 工具
 	 * @param {object} args  工具调用时传递的参数对象，例如 { assetsPath: ['path1', 'path2'] }
 	 * @returns {Promise<{ assets: Array<{ path: string, content: string, identifier: string }> }>}  工具执行结果对象，包含 assets 字段，assets 是一个包含文件路径、内容和标识符的对象数组
@@ -616,6 +576,77 @@ const toolExecutors = {
 		} catch (fetchError) {
 			console.error(`GitHub API 获取提交详情时发生网络错误: ${fetchError}, URL: ${fetchError.url || '未知'}`);
 			return { error: `GitHub API 获取提交详情时发生网络错误 - ${fetchError.message || '未知错误'}` };
+		}
+	},
+
+	/**
+	 * 执行 getOnlineMediaFile 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { fileUrl: '...', fileName: '...', mimeType: '...' }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 fileData 字段，用于直接作为 Gemini 的文件内容。
+	 */
+	getOnlineMediaFile: async (args) => {
+		console.log('执行工具: getOnlineMediaFile, 参数:', args);
+		const { fileUrl, fileName, mimeType } = args;
+
+		if (!fileUrl || !fileName || !mimeType) {
+			console.warn('getOnlineMediaFile 工具调用参数无效: 缺少 fileUrl, fileName 或 mimeType。');
+			return { error: 'getOnlineMediaFile 工具调用参数无效，缺少必要参数。' };
+		}
+
+		try {
+			// 调用 uploadFileToGemini 上传文件，并标记为工具执行
+			const mediaFile = await uploadFileToGemini(null, null, null, toolExecutors.env, true, {
+				fileUrl,
+				fileName,
+				mimeType,
+			});
+			if (mediaFile && mediaFile.uri && mediaFile.mimeType) {
+				console.log(`在线媒体文件 ${fileName} 上传成功，URI: ${mediaFile.uri}`);
+				// 返回符合 Gemini API 期望的 fileData 格式
+				return {
+					fileData: {
+						fileUri: mediaFile.uri,
+						mimeType: mediaFile.mimeType,
+					},
+				};
+			} else {
+				console.warn('上传在线媒体文件到 Gemini 失败。');
+				return { error: '上传在线媒体文件到 Gemini 失败。' };
+			}
+		} catch (error) {
+			console.warn(`执行 getOnlineMediaFile 失败: ${error.message}`);
+			return { error: `执行 getOnlineMediaFile 失败 - ${error.message || '未知错误'}` };
+		}
+	},
+
+	/**
+	 * 执行 getYoutubeVideoLink 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { videoUrl: 'https://www.youtube.com/watch?v=...' }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 fileData 字段，用于直接作为 Gemini 的文件内容。
+	 */
+	getYoutubeVideoLink: async (args) => {
+		console.log('执行工具: getYoutubeVideoLink, 参数:', args);
+		const { videoUrl } = args;
+
+		// 简单的 YouTube 链接验证，实际应用中可能需要更复杂的正则
+		const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|embed\/|v\/|)([\w-]{11})(.*)?$/;
+
+		if (!videoUrl || !youtubeRegex.test(videoUrl)) {
+			console.warn('getYoutubeVideoLink 工具调用参数无效: 缺少有效的 videoUrl。');
+			return { error: 'getYoutubeVideoLink 工具调用参数无效，请提供有效的 YouTube 视频链接。' };
+		}
+
+		try {
+			console.log(`YouTube 视频链接 ${videoUrl} 已验证。`);
+			// 返回符合 Gemini API 期望的 fileData 格式
+			return {
+				fileData: {
+					fileUri: videoUrl,
+				},
+			};
+		} catch (error) {
+			console.warn(`执行 getYoutubeVideoLink 失败: ${error.message}`);
+			return { error: `执行 getYoutubeVideoLink 失败 - ${error.message || '未知错误'}` };
 		}
 	},
 };

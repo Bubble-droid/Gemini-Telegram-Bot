@@ -119,7 +119,7 @@ class GeminiApi {
 								// 执行对应的工具函数
 								const toolResult = await this.toolExecutors[functionName](functionArgs);
 
-								if (functionName === 'getOnlineMediaFile' && toolResult.fileData) {
+								if ((functionName === 'getOnlineMediaFile' || functionName === 'getYoutubeVideoLink') && toolResult.fileData) {
 									toolResponseParts.push({
 										fileData: toolResult.fileData,
 									});

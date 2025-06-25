@@ -238,6 +238,20 @@ const tools = [
 		},
 	},
 	{
+		name: 'getYoutubeVideoLink',
+		description: '获取 YouTube 视频链接，如果用户提供了有效的 YouTube 视频链接。',
+		parameters: {
+			type: Type.OBJECT,
+			properties: {
+				videoUrl: {
+					type: Type.STRING,
+					description: 'YouTube 视频的完整 URL，例如 "https://www.youtube.com/watch?v=9hE5-98ZeCg"。',
+				},
+			},
+			required: ['videoUrl'],
+		},
+	},
+	{
 		name: 'getOnlineMediaFile',
 		description: '获取在线媒体文件（例如图片、视频），此工具适用于处理用户提供的在线媒体链接。',
 		parameters: {
