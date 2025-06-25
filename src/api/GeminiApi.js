@@ -159,7 +159,63 @@ const tools = [
 					required: ['owner', 'repo', 'path'],
 				},
 			},
+			{
+				name: 'listGitHubRepositoryCommits',
+				description: '获取指定 GitHub 仓库的最近提交记录。',
+				parameters: {
+					type: Type.OBJECT,
+					properties: {
+						owner: {
+							type: Type.STRING,
+							description: 'GitHub 仓库所有者，例如 "SagerNet"。',
+						},
+						repo: {
+							type: Type.STRING,
+							description: 'GitHub 仓库名称，例如 "sing-box"。',
+						},
+						branch: {
+							type: Type.STRING,
+							description: '要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
+							default: '',
+						},
+						path: {
+							type: Type.STRING,
+							description: '筛选提交记录的路径，只返回涉及该路径的提交。例如 "docs/"。此路径应相对于仓库根目录。',
+							default: '',
+						},
+						per_page: {
+							type: Type.NUMBER,
+							description: '每页返回的提交数量，默认为 10，最大 30。',
+							default: 10,
+						},
+						page: {
+							type: Type.NUMBER,
+							description: '页码，默认为 1。',
+							default: 1,
+						},
+					},
+					required: ['owner', 'repo'],
+				},
+			},
 		],
+	},
+	{
+		name: 'getGitHubRepositoryReleases',
+		description: '获取指定 GitHub 仓库的最新稳定发布版本（Latest Release）和最新预发布版本（Latest Pre-release）信息。',
+		parameters: {
+			type: Type.OBJECT,
+			properties: {
+				owner: {
+					type: Type.STRING,
+					description: 'GitHub 仓库所有者，例如 "SagerNet"。',
+				},
+				repo: {
+					type: Type.STRING,
+					description: 'GitHub 仓库名称，例如 "sing-box"。',
+				},
+			},
+			required: ['owner', 'repo'],
+		},
 	},
 ];
 
@@ -505,6 +561,156 @@ const toolExecutors = {
 			return { output: '错误：无法获取指定路径下的文件列表。' };
 		}
 	},
+
+	/**
+	 * 执行 listGitHubRepositoryCommits 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box', branch: 'dev-next', path: 'docs/', per_page: 50, page: 1 }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是提交记录列表
+	 */
+	listGitHubRepositoryCommits: async (args) => {
+		console.log('执行工具: listGitHubRepositoryCommits, 参数:', args);
+		const { owner, repo, branch = '', path = '', per_page = 10, page = 1 } = args;
+		const githubToken = toolExecutors.githubToken;
+
+		if (!owner || !repo) {
+			console.warn('listGitHubRepositoryCommits 工具调用参数无效: 缺少仓库所有者或仓库名称。');
+			return { output: '错误：listGitHubRepositoryCommits 工具调用参数无效，缺少仓库所有者或仓库名称。' };
+		}
+
+		if (!githubToken) {
+			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
+			return { output: '错误：GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
+		}
+
+		// 构建 GitHub API 提交记录 URL
+		let apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits${
+			branch ? `?sha=${encodeURIComponent(branch)}` : ''
+		}${path ? `&path=${path}` : ''}&per_page=${per_page}&page=${page}`;
+
+		try {
+			console.log(`尝试通过 GitHub API 获取提交记录: ${apiUrl}`);
+			const response = await fetch(apiUrl, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/vnd.github+json',
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot',
+				},
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.warn(`GitHub API 获取提交记录失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`);
+				return { output: `错误：GitHub API 获取提交记录失败 (状态码: ${response.status}) - ${errorText}` };
+			}
+
+			const data = await response.json();
+			const commits = [];
+
+			if (Array.isArray(data)) {
+				for (const item of data) {
+					commits.push({
+						sha: item.sha,
+						message: item.commit.message,
+						author: item.commit.author.name,
+						date: item.commit.author.date,
+						url: item.html_url,
+					});
+				}
+			}
+			console.log(`listGitHubRepositoryCommits 工具执行完毕，找到 ${commits.length} 条提交记录。`);
+			return { output: commits };
+		} catch (fetchError) {
+			console.error(`GitHub API 获取提交记录时发生网络错误: ${fetchError}, URL: ${fetchError.url || '未知'}`);
+			return { output: `错误：GitHub API 获取提交记录时发生网络错误 - ${fetchError.message || '未知错误'}` };
+		}
+	},
+
+	/**
+	 * 执行 getGitHubRepositoryReleases 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box' }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是最新稳定发布版本和最新预发布版本信息
+	 */
+	getGitHubRepositoryReleases: async (args) => {
+		console.log('执行工具: getGitHubRepositoryReleases, 参数:', args);
+		const { owner, repo } = args;
+		const githubToken = toolExecutors.githubToken;
+
+		if (!owner || !repo) {
+			console.warn('getGitHubRepositoryReleases 工具调用参数无效: 缺少仓库所有者或仓库名称。');
+			return { output: '错误：getGitHubRepositoryReleases 工具调用参数无效，缺少仓库所有者或仓库名称。' };
+		}
+
+		if (!githubToken) {
+			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
+			return { output: '错误：GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
+		}
+
+		const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases`;
+
+		try {
+			console.log(`尝试通过 GitHub API 获取所有发布版本: ${apiUrl}`);
+			const response = await fetch(apiUrl, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/vnd.github+json',
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot',
+				},
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.warn(`GitHub API 获取发布版本失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`);
+				return { output: `错误：GitHub API 获取发布版本失败 (状态码: ${response.status}) - ${errorText}` };
+			}
+
+			const data = await response.json();
+			let latestRelease = null;
+			let latestPreRelease = null;
+
+			for (const release of data) {
+				if (!release.draft) {
+					if (!release.prerelease) {
+						// 找到第一个非预发布版本，即为最新稳定版
+						if (!latestRelease) {
+							latestRelease = {
+								tag_name: release.tag_name,
+								name: release.name,
+								published_at: release.published_at,
+								html_url: release.html_url,
+							};
+						}
+					} else {
+						// 找到第一个预发布版本，即为最新预发布版
+						if (!latestPreRelease) {
+							latestPreRelease = {
+								tag_name: release.tag_name,
+								name: release.name,
+								published_at: release.published_at,
+								html_url: release.html_url,
+							};
+						}
+					}
+				}
+				// 如果都找到了，则可以提前退出循环
+				if (latestRelease && latestPreRelease) {
+					break;
+				}
+			}
+
+			console.log(`getGitHubRepositoryReleases 工具执行完毕。`);
+			return {
+				output: {
+					latestRelease: latestRelease,
+					latestPreRelease: latestPreRelease,
+				},
+			};
+		} catch (fetchError) {
+			console.error(`GitHub API 获取发布版本时发生网络错误: ${fetchError}, URL: ${fetchError.url || '未知'}`);
+			return { output: `错误：GitHub API 获取发布版本时发生网络错误 - ${fetchError.message || '未知错误'}` };
+		}
+	},
 };
 
 /**
@@ -534,14 +740,7 @@ class GeminiApi {
 	 */
 	async generateContent(initialContents) {
 		if (!initialContents || !Array.isArray(initialContents)) return null;
-
-		const ai = this.genai;
-		const modelName = this.model;
-		const tools = this.tools;
-		const toolExecutors = this.toolExecutors;
-		const kvNamespace = this.botConfigKv;
-		const key = this.systemPromptKey;
-		const systemPrompt = (await kvRead(kvNamespace, key)) || 'You are a helpful assistant.';
+		const systemPrompt = (await kvRead(this.botConfigKv, this.systemPromptKey)) || 'You are a helpful assistant.';
 
 		console.log(`systemPrompt: ${systemPrompt.slice(0, 200)}...`);
 
@@ -552,10 +751,10 @@ class GeminiApi {
 		const baseConfig = {
 			maxOutputTokens: 65536,
 			temperature: 0.3,
-			// thinkingConfig: {
-			// 	thinkingBudget: 24576,
-			// },
-			tools: tools,
+			thinkingConfig: {
+				thinkingBudget: 24576,
+			},
+			tools: this.tools,
 			toolConfig: {
 				functionCallingConfig: {
 					mode: FunctionCallingConfigMode.AUTO,
@@ -569,16 +768,15 @@ class GeminiApi {
 			],
 		};
 
-		const maxToolCallRounds = this.MAX_TOOL_CALL_ROUNDS;
 		// 循环处理，直到 API 返回最终回复而不是工具调用
-		for (let i = 0; i < maxToolCallRounds; i++) {
+		for (let i = 0; i < this.MAX_TOOL_CALL_ROUNDS; i++) {
 			console.log(`API 调用轮次: ${i + 1}`);
 			console.log('当前发送的 contents:', JSON.stringify(contents, null, 2)); // 打印完整的 contents 可能非常长，谨慎使用
 
 			try {
 				console.log('发送 Gemini API 请求...');
-				const response = await ai.models.generateContent({
-					model: modelName,
+				const response = await this.genai.models.generateContent({
+					model: this.model,
 					config: baseConfig,
 					contents: contents,
 				});
@@ -610,12 +808,12 @@ class GeminiApi {
 						const functionName = functionCall.functionCall.name;
 						const functionArgs = functionCall.functionCall.args;
 
-						if (toolExecutors[functionName]) {
+						if (this.toolExecutors[functionName]) {
 							try {
 								// 执行对应的工具函数
 								// console.log(`执行工具: ${functionName}, 参数:`, functionArgs);
 								// 工具执行器需要返回 { output: '...' } 格式
-								const toolResult = await toolExecutors[functionName](functionArgs);
+								const toolResult = await this.toolExecutors[functionName](functionArgs);
 
 								// 将工具执行结果添加到 toolResponseParts 数组
 								toolResponseParts.push({
@@ -707,7 +905,7 @@ class GeminiApi {
 		}
 
 		// 如果循环次数达到上限，仍然没有最终回复
-		const errorMsg = `达到最大 API 调用轮次 (${maxToolCallRounds})，未能获取最终回复`;
+		const errorMsg = `达到最大 API 调用轮次 (${this.MAX_TOOL_CALL_ROUNDS})，未能获取最终回复`;
 		console.error(errorMsg);
 		throw new Error(errorMsg);
 	}

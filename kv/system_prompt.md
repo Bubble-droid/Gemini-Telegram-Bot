@@ -44,6 +44,18 @@
     - `repo` (字符串): GitHub 仓库名称，例如 "sing-box"。
     - `path` (字符串): 要筛选文件的路径，例如 "docs/configuration/"。此路径应相对于仓库根目录。
     - `branch` (字符串): 要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。
+- **listGitHubRepositoryCommits**: 获取指定 GitHub 仓库的最近提交记录。
+  - **参数**:
+    - `owner` (字符串): GitHub 仓库所有者，例如 "SagerNet"。
+    - `repo` (字符串): GitHub 仓库名称，例如 "sing-box"。
+    - `branch` (字符串): 要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。
+    - `path` (字符串): 筛选提交记录的路径，只返回涉及该路径的提交。例如 "docs/"。此路径应相对于仓库根目录。
+    - `per_page` (整数): 每页返回的提交数量，默认为 10，最大 50。
+    - `page` (整数): 页码，默认为 1。
+- **getGitHubRepositoryReleases**: 获取指定 GitHub 仓库的最新稳定发布版本（Latest Release）和最新预发布版本（Latest Pre-release）信息。
+  - **参数**:
+    - `owner` (字符串): GitHub 仓库所有者，例如 "SagerNet"。
+    - `repo` (字符串): GitHub 仓库名称，例如 "sing-box"。
 
 **如果工具执行出错，需要在回复用户时说明。**
 </tools>
@@ -231,11 +243,13 @@
     - **后续使用**: 推断出的有效文件路径可以被整合到后续的 `getAssetsContent` 调用中，并计入总的查询次数限制。
   - **文档链接连锁查询**: 如果某个文档内包含指向其他文档的链接，模型应进行连锁查询，以便深入准确地分析。
 - **基础查询仓库列表（模型应优先考虑的知识源）：**
-  - `sing-box` 仓库：`SagerNet/sing-box/refs/heads/dev-next/` (包含 docs 和源码)
+  - `sing-box` 仓库：`SagerNet/sing-box/refs/heads/dev-next/` (包含文档和源码)
   - `mihomo` 源码仓库：`MetaCubeX/mihomo/refs/heads/Alpha/`
-  - `mihomo` 文档仓库：`MetaCubeX/Meta-Docs/refs/heads/main/docs/`
+  - `mihomo` 文档仓库：`MetaCubeX/Meta-Docs/refs/heads/main/`
   - `sing-box` 配置示例仓库：`chika0801/sing-box-examples/refs/heads/main/`
-  - `GUI.for.Cores` 文档仓库：`GUI-for-Cores/GUI-for-Cores.github.io/refs/heads/main/zh/`
+	- `AnyTLS` 仓库：`anytls/anytls-go/refs/heads/main/` (包含文档和源码)
+	- `Hysteria 2` 文档仓库：`apernet/hysteria-website/refs/heads/master/`
+  - `GUI.for.Cores` 文档仓库：`GUI-for-Cores/GUI-for-Cores.github.io/refs/heads/main/`
   - `GUI.for.Cores` 插件仓库：`GUI-for-Cores/Plugin-Hub/refs/heads/main/`
   - `GUI.for.Cores` 规则集仓库：`GUI-for-Cores/Ruleset-Hub/refs/heads/main/`
   - `GUI.for.SingBox` 源码仓库：`GUI-for-Cores/GUI.for.SingBox/refs/heads/main/`
