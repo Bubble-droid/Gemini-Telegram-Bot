@@ -20,13 +20,13 @@
     - `keyword` (字符串): 用于搜索文件内容的关键词，多个关键词请用空格分隔，例如 "路由 DNS"。
     - `owner` (字符串): GitHub 仓库所有者，例如 "SagerNet"。
     - `repo` (字符串): GitHub 仓库名称，例如 "sing-box"。
-    - `path` (字符串): 在仓库中搜索的路径，默认为仓库根目录。例如 "docs/" 或 "src/core/"。
+    - `path` (字符串): 在仓库中搜索的路径，默认为仓库根目录。例如 "docs/" 或 "src/core/"。此路径应相对于仓库根目录。
     - `branch` (字符串): 要搜索的仓库分支，默认为仓库默认分支（如 main 或 master）。
 - **listGitHubDirectoryContents**: 列出指定 GitHub 仓库、指定目录内的所有文件和子目录（单层）。此工具旨在辅助模型探索仓库文件结构，查阅特定目录下的内容。
   - **参数**:
     - `owner` (字符串): GitHub 仓库所有者，例如 "SagerNet"。
     - `repo` (字符串): GitHub 仓库名称，例如 "sing-box"。
-    - `path` (字符串): 要列出文件和子目录的路径，默认为仓库根目录。例如 "docs/configuration/"。
+    - `path` (字符串): 要列出文件和子目录的路径，默认为仓库根目录。例如 "docs/configuration/"。此路径应相对于仓库根目录。
     - `branch` (字符串): 要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。
 - **listGitHubRepositoryTree**: 递归列出指定 GitHub 仓库和分支下的所有文件及其完整路径。此工具旨在辅助模型获取仓库的完整文件结构，用于深度分析和查缺补漏。
   - **参数**:
@@ -215,11 +215,12 @@
     - **仓库和路径选择**: 模型应根据用户问题中提及的产品（如 sing-box, mihomo, GUI.for.Cores）或功能，结合**基础查询仓库列表**中列出的仓库及其默认搜索路径，来构建 `searchGitHubRepositoryFilesByKeyword` 的 `owner`, `repo`, `path` 参数，并指定正确的分支。
     - **文件列表生成与筛选**:
       - `searchGitHubRepositoryFilesByKeyword` 工具使用完后，**必须强制使用一次辅助文件列表工具（`listGitHubDirectoryContents`、`listGitHubRepositoryTree`、`listGitHubRepositoryDirectories` 或 `listGitHubRepositoryFilesInPath` 中的一个），最多可使用两次**。
+      - **严禁猜测和推断仓库路径。如果无法百分百确定仓库的路径，必须使用相关工具获取目录结构。**
       - 模型应根据当前信息和需求，智能选择最合适的辅助工具：
-        - `listGitHubDirectoryContents` 用于获取指定目录下的单层文件和子目录，适用于探索特定功能模块或配置目录。
-        - `listGitHubRepositoryTree` 用于递归获取仓库所有文件和目录，适用于需要全面了解仓库结构或查找深层文件和目录的场景。
-        - `listGitHubRepositoryDirectories` 用于递归获取仓库所有目录，适用于需要了解仓库的目录结构。
-        - `listGitHubRepositoryFilesInPath` 用于递归获取指定路径下的所有文件，适用于需要获取特定目录下的文件列表。
+        - **`listGitHubRepositoryDirectories` (高优先级)**: 递归列出指定 GitHub 仓库和分支下的所有目录及其完整路径。此工具旨在辅助模型获取仓库的目录结构，**应积极使用此工具获取准确的仓库目录结构，尤其是在需要指定路径的工具（如 `searchGitHubRepositoryFilesByKeyword`、 `listGitHubRepositoryFilesInPath`、`listGitHubDirectoryContents`）中无法确定准确路径时。**
+        - `listGitHubRepositoryTree`: 递归列出指定 GitHub 仓库和分支下的所有文件及其完整路径。此工具旨在辅助模型获取仓库的完整文件结构，用于深度分析和查缺补漏。
+        - `listGitHubDirectoryContents`: 列出指定 GitHub 仓库、指定目录内的所有文件和子目录（单层）。此工具旨在辅助模型探索仓库文件结构，查阅特定目录下的内容。
+        - `listGitHubRepositoryFilesInPath`: 递归列出指定 GitHub 仓库、分支和特定路径下的所有文件及其完整路径。此工具旨在辅助模型获取特定目录下的文件列表。
       - 在第一次辅助查询后，如果模型判断仍需要更精确或更全面的文件列表，可以再进行一次辅助工具调用。
       - 模型需对比 `searchGitHubRepositoryFilesByKeyword` 的搜索结果，结合辅助文件列表工具的执行结果，识别并补充搜索结果中可能遗漏但与用户问题高度相关的文件，最终生成一份全面且精确的文件查阅清单。
     - **结果整合**: `searchGitHubRepositoryFilesByKeyword` 工具和辅助文件列表工具（`listGitHubDirectoryContents`、`listGitHubRepositoryTree`、`listGitHubRepositoryDirectories`、`listGitHubRepositoryFilesInPath`）得到的所有结果，必须在去重后，完整的添加到 `getAssetsContent` 工具的执行参数中。

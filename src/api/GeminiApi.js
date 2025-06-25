@@ -46,7 +46,7 @@ const tools = [
 						},
 						path: {
 							type: Type.STRING,
-							description: '在仓库中搜索的路径，默认为仓库根目录。例如 "docs/" 或 "src/core/"。',
+							description: '在仓库中搜索的路径，默认为仓库根目录。例如 "docs/" 或 "frontend/src/"。此路径应相对于仓库根目录。',
 							default: '',
 						},
 						branch: {
@@ -74,7 +74,7 @@ const tools = [
 						},
 						path: {
 							type: Type.STRING,
-							description: '要列出文件和子目录的路径，默认为仓库根目录。例如 "docs/configuration/"。',
+							description: '要列出文件和子目录的路径，默认为仓库根目录。例如 "docs/configuration/"。此路径应相对于仓库根目录。',
 							default: '',
 						},
 						branch: {
