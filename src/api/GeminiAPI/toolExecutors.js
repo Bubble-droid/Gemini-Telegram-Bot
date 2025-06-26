@@ -52,9 +52,16 @@ const toolExecutors = {
 						}
 
 						const assetContent = await response.text();
+						const MAX_CHUNK_LENGTH = 1024; // 定义每个文本块的最大长度
+						const chunkedContent = [];
+
+						for (let i = 0; i < assetContent.length; i += MAX_CHUNK_LENGTH) {
+							chunkedContent.push({ text: assetContent.slice(i, i + MAX_CHUNK_LENGTH) });
+						}
+
 						assetsContent.push({
 							path: asset,
-							content: assetContent,
+							content: chunkedContent, // 存储分割后的内容数组
 							identifier: assetIdentifier,
 						});
 					} catch (fetchError) {
@@ -75,19 +82,20 @@ const toolExecutors = {
 		console.log('getAssetsContent 工具执行完毕，结果数量:', assetsContent.length);
 		return { assets: assetsContent }; // 返回包含结果的对象，使用 assets 字段
 	},
+
 	/**
-	 * 执行 searchGitHubRepositoryFilesByKeyword 工具
+	 * 执行 searchFilesByKeyword 工具
 	 * @param {object} args - 工具调用时传递的参数对象，例如 { keyword: 'resolve', owner: 'SagerNet', repo: 'sing-box', path: 'assets/', branch: 'main' }
 	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是找到的文件路径列表
 	 */
-	searchGitHubRepositoryFilesByKeyword: async (args) => {
-		console.log('执行工具: searchGitHubRepositoryFilesByKeyword, 参数:', args);
-		const { keyword, owner, repo, path = '', branch = '' } = args; // 默认分支为 'main'
+	searchFilesByKeyword: async (args) => {
+		console.log('执行工具: searchFilesByKeyword, 参数:', args);
+		const { keyword, owner, repo, path = '', branch = 'main' } = args; // 默认分支为 'main'
 		const githubToken = toolExecutors.githubToken; // 从 toolExecutors 获取 githubToken
 
 		if (!keyword || !owner || !repo) {
-			console.warn('searchGitHubRepositoryFilesByKeyword 工具调用参数无效:', args);
-			return { error: 'searchGitHubRepositoryFilesByKeyword 工具调用参数无效，缺少关键词、仓库所有者或仓库名称。' };
+			console.warn('searchFilesByKeyword 工具调用参数无效:', args);
+			return { error: 'searchFilesByKeyword 工具调用参数无效，缺少关键词、仓库所有者或仓库名称。' };
 		}
 
 		if (!githubToken) {
@@ -129,7 +137,7 @@ const toolExecutors = {
 					foundFiles.push(`${repoFullName}/refs/heads/${branch}/${item.path}`);
 				}
 			}
-			console.log(`searchGitHubRepositoryFilesByKeyword 工具执行完毕，找到 ${foundFiles.length} 个文件。`);
+			console.log(`searchFilesByKeyword 工具执行完毕，找到 ${foundFiles.length} 个文件。`);
 			return { foundFiles };
 		} catch (fetchError) {
 			console.error(`GitHub API 搜索文件时发生网络错误: ${fetchError}, URL: ${apiUrl}`);
@@ -138,18 +146,18 @@ const toolExecutors = {
 	},
 
 	/**
-	 * 执行 listGitHubDirectoryContents 工具
+	 * 执行 listDirContents 工具
 	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box', path: 'docs/', branch: 'dev-next' }
 	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是文件和目录列表
 	 */
-	listGitHubDirectoryContents: async (args) => {
-		console.log('执行工具: listGitHubDirectoryContents, 参数:', args);
-		const { owner, repo, path = '', branch = '' } = args;
+	listDirContents: async (args) => {
+		console.log('执行工具: listDirContents, 参数:', args);
+		const { owner, repo, path = '', branch = 'main' } = args;
 		const githubToken = toolExecutors.githubToken; // 从 toolExecutors 获取 githubToken
 
 		if (!owner || !repo) {
-			console.warn('listGitHubDirectoryContents 工具调用参数无效:', args);
-			return { error: 'listGitHubDirectoryContents 工具调用参数无效，缺少仓库所有者或仓库名称。' };
+			console.warn('listDirContents 工具调用参数无效:', args);
+			return { error: 'listDirContents 工具调用参数无效，缺少仓库所有者或仓库名称。' };
 		}
 
 		if (!githubToken) {
@@ -185,7 +193,6 @@ const toolExecutors = {
 
 			if (Array.isArray(data)) {
 				for (const item of data) {
-					// 构建完整的 GitHub 文件路径，格式为 "owner/repo/refs/heads/branch/path/to/file.ext"
 					// item.path 已经是相对于仓库根目录的路径
 					const fullPath = `${owner}/${repo}/refs/heads/${branch}/${item.path}`;
 					fileList.push({
@@ -195,7 +202,7 @@ const toolExecutors = {
 					});
 				}
 			}
-			console.log(`listGitHubDirectoryContents 工具执行完毕，找到 ${fileList.length} 个文件/目录。`);
+			console.log(`listDirContents 工具执行完毕，找到 ${fileList.length} 个文件/目录。`);
 			return { fileList };
 		} catch (fetchError) {
 			console.error(`GitHub API 列出目录内容时发生网络错误: ${fetchError}, URL: ${apiUrl}`);
@@ -204,18 +211,18 @@ const toolExecutors = {
 	},
 
 	/**
-	 * 执行 listGitHubRepositoryTree 工具
+	 * 执行 listRepoTree 工具
 	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box', branch: 'dev-next' }
 	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是文件列表
 	 */
-	listGitHubRepositoryTree: async (args) => {
-		console.log('执行工具: listGitHubRepositoryTree, 参数:', args);
-		const { owner, repo, branch = '' } = args;
+	listRepoTree: async (args) => {
+		console.log('执行工具: listRepoTree, 参数:', args);
+		const { owner, repo, branch = 'main' } = args;
 		const githubToken = toolExecutors.githubToken; // 从 toolExecutors 获取 githubToken
 
 		if (!owner || !repo) {
-			console.warn('listGitHubRepositoryTree 工具调用参数无效:', args);
-			return { error: 'listGitHubRepositoryTree 工具调用参数无效，缺少仓库所有者或仓库名称。' };
+			console.warn('listRepoTree 工具调用参数无效:', args);
+			return { error: 'listRepoTree 工具调用参数无效，缺少仓库所有者或仓库名称。' };
 		}
 
 		if (!githubToken) {
@@ -281,7 +288,7 @@ const toolExecutors = {
 					});
 				}
 			}
-			console.log(`listGitHubRepositoryTree 工具执行完毕，找到 ${fileList.length} 个文件。`);
+			console.log(`listRepoTree 工具执行完毕，找到 ${fileList.length} 个文件。`);
 			return { fileList };
 		} catch (fetchError) {
 			console.error(`GitHub API 列出仓库文件树时发生网络错误: ${fetchError}, URL: ${fetchError.url || '未知'}`);
@@ -290,48 +297,48 @@ const toolExecutors = {
 	},
 
 	/**
-	 * 执行 listGitHubRepositoryDirectories 工具
+	 * 执行 listRepoDirs 工具
 	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box', branch: 'dev-next' }
 	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是目录列表
 	 */
-	listGitHubRepositoryDirectories: async (args) => {
-		console.log('执行工具: listGitHubRepositoryDirectories, 参数:', args);
-		const { owner, repo, branch = '' } = args;
+	listRepoDirs: async (args) => {
+		console.log('执行工具: listRepoDirs, 参数:', args);
+		const { owner, repo, branch = 'main' } = args;
 
-		// 调用 listGitHubRepositoryTree 获取完整的仓库树
-		const treeResult = await toolExecutors.listGitHubRepositoryTree({ owner, repo, branch });
+		// 调用 listRepoTree 获取完整的仓库树
+		const treeResult = await toolExecutors.listRepoTree({ owner, repo, branch });
 
 		if (treeResult.fileList && Array.isArray(treeResult.fileList)) {
 			// 检查 treeResult.fileList
 			// 筛选出所有类型为 'tree' 的项（即目录）
 			const directories = treeResult.fileList.filter((item) => item.type === 'tree'); // 使用 treeResult.fileList
-			console.log(`listGitHubRepositoryDirectories 工具执行完毕，找到 ${directories.length} 个目录。`);
+			console.log(`listRepoDirs 工具执行完毕，找到 ${directories.length} 个目录。`);
 			return { directories };
 		} else {
-			console.warn('listGitHubRepositoryDirectories 无法获取有效的仓库树数据。');
+			console.warn('listRepoDirs 无法获取有效的仓库树数据。');
 			return { error: '无法获取仓库目录列表。' };
 		}
 	},
 
 	/**
-	 * 执行 listGitHubRepositoryFilesInPath 工具
+	 * 执行 listRepoFilesInPath 工具
 	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box', path: 'docs/', branch: 'dev-next' }
 	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是文件列表
 	 */
-	listGitHubRepositoryFilesInPath: async (args) => {
-		console.log('执行工具: listGitHubRepositoryFilesInPath, 参数:', args);
-		const { owner, repo, path, branch = '' } = args;
+	listRepoFilesInPath: async (args) => {
+		console.log('执行工具: listRepoFilesInPath, 参数:', args);
+		const { owner, repo, path, branch = 'main' } = args;
 
 		if (!path) {
-			console.warn('listGitHubRepositoryFilesInPath 工具调用参数无效: 缺少 path。');
-			return { error: 'listGitHubRepositoryFilesInPath 工具调用参数无效，缺少路径参数。' };
+			console.warn('listRepoFilesInPath 工具调用参数无效: 缺少 path。');
+			return { error: 'listRepoFilesInPath 工具调用参数无效，缺少路径参数。' };
 		}
 
 		// 确保 path 以斜杠结尾，以便正确匹配目录下的文件
 		const cleanedPath = path.endsWith('/') ? path : `${path}/`;
 
-		// 调用 listGitHubRepositoryTree 获取完整的仓库树
-		const treeResult = await toolExecutors.listGitHubRepositoryTree({ owner, repo, branch });
+		// 调用 listRepoTree 获取完整的仓库树
+		const treeResult = await toolExecutors.listRepoTree({ owner, repo, branch });
 
 		if (treeResult.fileList && Array.isArray(treeResult.fileList)) {
 			// 检查 treeResult.fileList
@@ -351,27 +358,27 @@ const toolExecutors = {
 				const relativePathInRepo = parts.slice(5).join('/');
 				return relativePathInRepo.startsWith(cleanedPath);
 			});
-			console.log(`listGitHubRepositoryFilesInPath 工具执行完毕，找到 ${filesInPath.length} 个文件。`);
+			console.log(`listRepoFilesInPath 工具执行完毕，找到 ${filesInPath.length} 个文件。`);
 			return { filesInPath };
 		} else {
-			console.warn('listGitHubRepositoryFilesInPath 无法获取有效的仓库树数据。');
+			console.warn('listRepoFilesInPath 无法获取有效的仓库树数据。');
 			return { error: '无法获取指定路径下的文件列表。' };
 		}
 	},
 
 	/**
-	 * 执行 listGitHubRepositoryCommits 工具
+	 * 执行 listRepoCommits 工具
 	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box', branch: 'dev-next', path: 'docs/', per_page: 50, page: 1 }
 	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是提交记录列表
 	 */
-	listGitHubRepositoryCommits: async (args) => {
-		console.log('执行工具: listGitHubRepositoryCommits, 参数:', args);
-		const { owner, repo, branch = '', path = '', per_page = 10, page = 1 } = args;
+	listRepoCommits: async (args) => {
+		console.log('执行工具: listRepoCommits, 参数:', args);
+		const { owner, repo, branch = 'main', path = '', per_page = 10, page = 1 } = args;
 		const githubToken = toolExecutors.githubToken;
 
 		if (!owner || !repo) {
-			console.warn('listGitHubRepositoryCommits 工具调用参数无效: 缺少仓库所有者或仓库名称。');
-			return { error: 'listGitHubRepositoryCommits 工具调用参数无效，缺少仓库所有者或仓库名称。' };
+			console.warn('listRepoCommits 工具调用参数无效: 缺少仓库所有者或仓库名称。');
+			return { error: 'listRepoCommits 工具调用参数无效，缺少仓库所有者或仓库名称。' };
 		}
 
 		if (!githubToken) {
@@ -415,7 +422,7 @@ const toolExecutors = {
 					});
 				}
 			}
-			console.log(`listGitHubRepositoryCommits 工具执行完毕，找到 ${commits.length} 条提交记录。`);
+			console.log(`listRepoCommits 工具执行完毕，找到 ${commits.length} 条提交记录。`);
 			return { commits };
 		} catch (fetchError) {
 			console.error(`GitHub API 获取提交记录时发生网络错误: ${fetchError}, URL: ${fetchError.url || '未知'}`);
@@ -424,18 +431,18 @@ const toolExecutors = {
 	},
 
 	/**
-	 * 执行 getGitHubRepositoryReleases 工具
+	 * 执行 getRepoReleases 工具
 	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box' }
 	 * @returns {Promise<object>} - 工具执行结果对象，包含 output 字段，output 是最新稳定发布版本和最新预发布版本信息
 	 */
-	getGitHubRepositoryReleases: async (args) => {
-		console.log('执行工具: getGitHubRepositoryReleases, 参数:', args);
+	getRepoReleases: async (args) => {
+		console.log('执行工具: getRepoReleases, 参数:', args);
 		const { owner, repo } = args;
 		const githubToken = toolExecutors.githubToken;
 
 		if (!owner || !repo) {
-			console.warn('getGitHubRepositoryReleases 工具调用参数无效: 缺少仓库所有者或仓库名称。');
-			return { error: 'getGitHubRepositoryReleases 工具调用参数无效，缺少仓库所有者或仓库名称。' };
+			console.warn('getRepoReleases 工具调用参数无效: 缺少仓库所有者或仓库名称。');
+			return { error: 'getRepoReleases 工具调用参数无效，缺少仓库所有者或仓库名称。' };
 		}
 
 		if (!githubToken) {
@@ -496,7 +503,7 @@ const toolExecutors = {
 				}
 			}
 
-			console.log(`getGitHubRepositoryReleases 工具执行完毕。`);
+			console.log(`getRepoReleases 工具执行完毕。`);
 			return {
 				latestRelease: latestRelease,
 				latestPreRelease: latestPreRelease,
@@ -508,18 +515,18 @@ const toolExecutors = {
 	},
 
 	/**
-	 * 执行 getGitHubCommitDetails 工具
+	 * 执行 getCommitDetails 工具
 	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box', commit_sha: '2464ced48c504eb0dee616c6d474813621779afc' }
 	 * @returns {Promise<object>} - 工具执行结果对象，包含提交的关键详细信息
 	 */
-	getGitHubCommitDetails: async (args) => {
-		console.log('执行工具: getGitHubCommitDetails, 参数:', args);
+	getCommitDetails: async (args) => {
+		console.log('执行工具: getCommitDetails, 参数:', args);
 		const { owner, repo, commit_sha } = args;
 		const githubToken = toolExecutors.githubToken;
 
 		if (!owner || !repo || !commit_sha) {
-			console.warn('getGitHubCommitDetails 工具调用参数无效: 缺少仓库所有者、仓库名称或提交 SHA。');
-			return { error: 'getGitHubCommitDetails 工具调用参数无效，缺少仓库所有者、仓库名称或提交 SHA。' };
+			console.warn('getCommitDetails 工具调用参数无效: 缺少仓库所有者、仓库名称或提交 SHA。');
+			return { error: 'getCommitDetails 工具调用参数无效，缺少仓库所有者、仓库名称或提交 SHA。' };
 		}
 
 		if (!githubToken) {
@@ -571,7 +578,7 @@ const toolExecutors = {
 				})),
 			};
 
-			console.log(`getGitHubCommitDetails 工具执行完毕，获取到提交 ${commit_sha} 的关键详细信息。`);
+			console.log(`getCommitDetails 工具执行完毕，获取到提交 ${commit_sha} 的关键详细信息。`);
 			return { commitDetails };
 		} catch (fetchError) {
 			console.error(`GitHub API 获取提交详情时发生网络错误: ${fetchError}, URL: ${fetchError.url || '未知'}`);

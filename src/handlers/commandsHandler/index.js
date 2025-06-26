@@ -4,6 +4,7 @@ import getConfig from '../../env';
 import TelegramBot from '../../api/TelegramBot';
 import handleStartCommand from './startCommand';
 import handleClearCommand from './clearCommand';
+import handleToolsCommand from './toolsCommand';
 import { scheduleDeletion } from '../../utils/scheduler';
 
 /**
@@ -39,12 +40,16 @@ async function commandsHandler(message, env) {
 				console.log('Executing clear command placeholder');
 				await handleClearCommand(message, env);
 				break;
-			case 'debug':
-				console.log('Executing debug command placeholder');
+			case 'tools':
+				console.log('Executing tools command placeholder');
+				await handleToolsCommand(message, env);
 				break;
-			case 'debug_out':
-				console.log('Executing debug_out command placeholder');
-				break;
+			// case 'debug':
+			// 	console.log('Executing debug command placeholder');
+			// 	break;
+			// case 'debug_out':
+			// 	console.log('Executing debug_out command placeholder');
+			// 	break;
 			default:
 				console.log(`Unknown command: ${command}`);
 		}
