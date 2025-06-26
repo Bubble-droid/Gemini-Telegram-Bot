@@ -694,7 +694,7 @@ const tools = [
 			},
 			{
 				name: 'getYoutubeVideoLink',
-				description: '获取 YouTube 视频链接，如果用户提供了有效的 YouTube 视频链接。',
+				description: '提取 YouTube 视频链接，如果用户提供了有效的 YouTube 视频链接。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -704,7 +704,6 @@ const tools = [
 							type: Type.STRING,
 							description: 'YouTube 视频的完整 URL，例如 "https://www.youtube.com/watch?v=9hE5-98ZeCg"。',
 							example: 'https://www.youtube.com/watch?v=9hE5-98ZeCg',
-							pattern: '^https?://(?:www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+$',
 						},
 					},
 					required: ['videoUrl'],

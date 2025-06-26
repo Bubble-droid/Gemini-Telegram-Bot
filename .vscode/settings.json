@@ -6,6 +6,7 @@
 		"anytls",
 		"apernet",
 		"assetstxt",
+		"capnp",
 		"chika",
 		"completeasset",
 		"docstxt",
@@ -38,6 +39,7 @@
 		"wailsjs",
 		"webdav",
 		"Wintun",
+		"workerd",
 		"Yacd",
 		"youtu"
 	]

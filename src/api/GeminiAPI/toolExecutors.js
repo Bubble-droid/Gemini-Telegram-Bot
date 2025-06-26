@@ -24,9 +24,9 @@ const toolExecutors = {
 					// 从路径中提取 repo/branch/file.ext 作为文档名称的简写
 					const assetNameParts = asset.split('/');
 					const repoName = assetNameParts[1]; // 例如 'Meta-assets'
-					const branchName = assetNameParts[3]; // 例如 'main'
+					const branchName = assetNameParts[4]; // 例如 'main'
 					const fileName = assetNameParts
-						.slice(4)
+						.slice(5)
 						.join('_')
 						.replace(/\.[^/.]+$/, ''); // 移除文件后缀
 					const assetIdentifier = `${repoName}_${branchName}_${fileName}`;

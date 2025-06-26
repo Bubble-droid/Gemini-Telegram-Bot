@@ -20,7 +20,10 @@ async function handleToolsCommand(message, env) {
 	} = message;
 
 	try {
-		const toolList = tools[0].functionDeclarations.map((tool) => ` - \`${tool.name}\`: ${tool.description}`).join('\n');
+		const toolList = tools[0].functionDeclarations
+			.map((tool) => ` - \`${tool.name}\`: ${tool.description}`)
+			.join('\n\n')
+			.trim();
 		const { message_id: toolsMessageId } = await bot.sendMessage({
 			chat_id: chatId,
 			text: `🛠  模型可用工具列表：\n\n${toolList}`,
