@@ -58,7 +58,7 @@ const tools = [
 			},
 			{
 				name: 'listGitHubDirectoryContents',
-				description: '列出指定 GitHub 仓库、指定目录内的所有文件和子目录（单层）。此工具旨在辅助模型探索仓库指定目录的文件结构。',
+				description: '列出指定 GitHub 仓库、指定目录内的所有文件和子目录（单层）。此工具旨在辅助探索仓库指定目录的文件结构。',
 				parameters: {
 					type: Type.OBJECT,
 					properties: {
@@ -86,7 +86,7 @@ const tools = [
 			},
 			{
 				name: 'listGitHubRepositoryTree',
-				description: '递归列出指定 GitHub 仓库和分支下的所有文件及其完整路径。此工具旨在辅助模型获取仓库的完整文件结构，用于深度分析。',
+				description: '递归列出指定 GitHub 仓库和分支下的所有文件及其完整路径。此工具旨在辅助获取仓库的完整文件结构，用于深度分析。',
 				parameters: {
 					type: Type.OBJECT,
 					properties: {
@@ -109,7 +109,7 @@ const tools = [
 			},
 			{
 				name: 'listGitHubRepositoryDirectories',
-				description: '递归列出指定 GitHub 仓库和分支下的所有目录及其完整路径。此工具旨在辅助模型获取仓库的目录结构，用于深度分析。',
+				description: '递归列出指定 GitHub 仓库和分支下的所有目录及其完整路径。此工具旨在辅助获取仓库的目录结构，用于深度分析。',
 				parameters: {
 					type: Type.OBJECT,
 					properties: {
@@ -132,7 +132,7 @@ const tools = [
 			},
 			{
 				name: 'listGitHubRepositoryFilesInPath',
-				description: '递归列出指定 GitHub 仓库、分支和特定路径下的所有文件及其完整路径。此工具旨在辅助模型获取特定目录下的文件列表。',
+				description: '递归列出指定 GitHub 仓库、分支和特定路径下的所有文件及其完整路径。此工具旨在辅助获取特定目录下的文件列表。',
 				parameters: {
 					type: Type.OBJECT,
 					properties: {
