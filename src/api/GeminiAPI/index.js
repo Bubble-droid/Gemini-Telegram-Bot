@@ -50,7 +50,7 @@ class GeminiApi {
 			tools: this.tools,
 			toolConfig: {
 				functionCallingConfig: {
-					mode: FunctionCallingConfigMode.VALIDATED,
+					mode: FunctionCallingConfigMode.AUTO,
 				},
 			},
 			responseMimeType: 'text/plain',

@@ -33,7 +33,7 @@ const getConfig = (env) => {
 		botToken: env.TELEGRAM_BOT_TOKEN,
 		apiUrl: `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}`,
 		secretToken: env.WEBHOOK_SECRET_TOKEN,
-		kvExpirationTtl: Number(env.KV_EXPIRATION_TTL) * 24 * 60 * 60 || 7 * 24 * 60 * 60,
+		kvExpirationTtl: (Number(env.KV_EXPIRATION_TTL) || 7) * 24 * 60 * 60,
 		botConfigKv: env.TELEGRAM_BOT_CONFIG,
 		chatContentsKv: env.GROUP_CHAT_CONTENTS,
 		allowedGroupIds: env.ALLOWED_GROUP_IDS,

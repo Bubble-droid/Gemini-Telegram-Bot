@@ -33,7 +33,6 @@ async function updateChatContents(env, chatId, userId, message) {
 		if (contents.length > maxContentsLength) {
 			contents = contents.slice(contents.length - maxContentsLength);
 		}
-		console.log(`kvExpirationTtl: ${kvExpirationTtl}`);
 		await kvWrite(kvNamespace, key, JSON.stringify(contents), { expirationTtl: kvExpirationTtl });
 		// console.log(`更新后的 Chat contents: ${JSON.stringify(contents, null, 2)}`);
 		console.log(`${key}: 对话内容更新成功，当前长度 ${contents.length}`);
