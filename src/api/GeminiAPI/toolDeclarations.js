@@ -75,7 +75,7 @@ const tools = [
 			},
 			{
 				name: 'searchFilesByKeyword',
-				description: '根据关键词在指定的 GitHub 仓库和路径中搜索文件内容，以获取相关文件路径。',
+				description: '根据关键词在指定的 GitHub 仓库、分支和特定路径下搜索文件内容，以获取相关文件路径。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -133,7 +133,7 @@ const tools = [
 			},
 			{
 				name: 'listDirContents',
-				description: '列出指定 GitHub 仓库、指定目录内的所有文件和子目录（单层）。此工具旨在辅助探索仓库指定目录的文件结构。',
+				description: '列出指定 GitHub 仓库、指定目录内的所有文件和子目录（只包含顶层内容）。此工具旨在辅助探索仓库指定目录的文件结构。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -392,7 +392,7 @@ const tools = [
 			},
 			{
 				name: 'listRepoCommits',
-				description: '获取指定 GitHub 仓库的最近提交记录。',
+				description: '获取指定 GitHub 仓库的最近指定次数的提交记录。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -692,7 +692,7 @@ const tools = [
 			},
 			{
 				name: 'getYoutubeVideoLink',
-				description: '提取 YouTube 视频链接，如果用户提供了有效的 YouTube 视频链接。',
+				description: '解析用户提供的 YouTube 视频链接，并识别视频内容。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -706,31 +706,31 @@ const tools = [
 					},
 					required: ['videoUrl'],
 				},
-				// response: {
-				// 	type: Type.OBJECT,
-				// 	title: 'Get Youtube Video Link Response',
-				// 	properties: {
-				// 		fileData: {
-				// 			type: Type.OBJECT,
-				// 			description: '用于直接作为 Gemini 的文件内容的数据。',
-				// 			properties: {
-				// 				fileUri: {
-				// 					type: Type.STRING,
-				// 					description: 'YouTube 视频的 URI。',
-				// 				},
-				// 			},
-				// 			required: ['fileUri'],
-				// 		},
-				// 		error: {
-				// 			type: Type.STRING,
-				// 			description: '如果发生错误，则包含错误信息。',
-				// 		},
-				// 	},
-				// },
+				response: {
+					type: Type.OBJECT,
+					title: 'Get Youtube Video Link Response',
+					properties: {
+						fileData: {
+							type: Type.OBJECT,
+							description: '用于识别的文件数据',
+							properties: {
+								fileUri: {
+									type: Type.STRING,
+									description: 'YouTube 视频的 URI。',
+								},
+							},
+							required: ['fileUri'],
+						},
+						error: {
+							type: Type.STRING,
+							description: '如果发生错误，则包含错误信息。',
+						},
+					},
+				},
 			},
 			{
 				name: 'getOnlineMediaFile',
-				description: '获取在线媒体文件（例如图片、视频），此工具适用于处理用户提供的在线媒体链接。',
+				description: '解析用户提供的在线媒体文件（例如图片、视频）链接，并识别文件内容。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -738,7 +738,7 @@ const tools = [
 					properties: {
 						fileUrl: {
 							type: Type.STRING,
-							description: '在线媒体文件的完整URL，例如 "https://example.com/image.jpg"。',
+							description: '在线媒体文件的完整 URL，例如 "https://example.com/image.jpg"。',
 							example: 'https://example.com/image.jpg',
 						},
 						fileName: {
@@ -754,31 +754,31 @@ const tools = [
 					},
 					required: ['fileUrl', 'fileName', 'mimeType'],
 				},
-				// response: {
-				// 	type: Type.OBJECT,
-				// 	title: 'Get Online Media File Response',
-				// 	properties: {
-				// 		fileData: {
-				// 			type: Type.OBJECT,
-				// 			description: '用于直接作为 Gemini 的文件内容的数据。',
-				// 			properties: {
-				// 				fileUri: {
-				// 					type: Type.STRING,
-				// 					description: '在线媒体文件的 URI。',
-				// 				},
-				// 				mimeType: {
-				// 					type: Type.STRING,
-				// 					description: '在线媒体文件的 MIME 类型。',
-				// 				},
-				// 			},
-				// 			required: ['fileUri', 'mimeType'],
-				// 		},
-				// 		error: {
-				// 			type: Type.STRING,
-				// 			description: '如果发生错误，则包含错误信息。',
-				// 		},
-				// 	},
-				// },
+				response: {
+					type: Type.OBJECT,
+					title: 'Get Online Media File Response',
+					properties: {
+						fileData: {
+							type: Type.OBJECT,
+							description: '用于识别的文件数据。',
+							properties: {
+								fileUri: {
+									type: Type.STRING,
+									description: '在线媒体文件的 URI。',
+								},
+								mimeType: {
+									type: Type.STRING,
+									description: '在线媒体文件的 MIME 类型。',
+								},
+							},
+							required: ['fileUri', 'mimeType'],
+						},
+						error: {
+							type: Type.STRING,
+							description: '如果发生错误，则包含错误信息。',
+						},
+					},
+				},
 			},
 		],
 	},

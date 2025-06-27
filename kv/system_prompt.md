@@ -14,7 +14,7 @@
 
 - **getAssetsContent**: 根据提供的 GitHub 仓库文件路径列表，获取文件的原始内容。
 	- **参数**: `assetsPath` (数组): 文件路径列表，例如 `["MetaCubeX/Meta-Docs/refs/heads/main/docs/api/index.md"]`。
-- **searchFilesByKeyword**: 根据关键词在指定的 GitHub 仓库和路径中搜索文件内容，以获取相关文件路径。
+- **searchFilesByKeyword**: 根据关键词在指定的 GitHub 仓库、分支和特定路径下搜索文件内容，以获取相关文件路径。
 	- **参数**: `keyword` (字符串): 搜索关键词 (多词用空格分隔)；`owner` (字符串): 仓库所有者；`repo` (字符串): 仓库名称；`path` (字符串, 选填): 仓库内搜索路径 (默认根目录)；`branch` (字符串, 选填): 仓库分支 (默认默认分支)。
 - **listDirContents**: 列出指定 GitHub 仓库、指定目录内的所有文件和子目录（单层）。此工具旨在辅助探索仓库指定目录的文件结构
 	- **参数**: `owner`, `repo`, `path` (选填), `branch` (选填) (同 `searchFilesByKeyword`)。
@@ -30,9 +30,9 @@
 	- **参数**: `owner`, `repo`, `commit_sha`。
 - **getRepoReleases**: 获取指定 GitHub 仓库的最新稳定发布版本（Latest Release）和最新预发布版本（Latest Pre-release）信息。
 	- **参数**: `owner`, `repo`。
-- **getOnlineMediaFile**: 获取在线媒体文件（例如图片、视频），此工具适用于处理用户提供的在线媒体链接。
+- **getOnlineMediaFile**: 解析用户提供的在线媒体文件（例如图片、视频）链接，并识别文件内容。
 	- **参数**: `fileUrl` (字符串), `fileName` (字符串), `mimeType` (字符串)。
-- **getYoutubeVideoLink**: 获取 YouTube 视频链接，如果用户提供了有效的 YouTube 视频链接。
+- **getYoutubeVideoLink**: 解析用户提供的 YouTube 视频链接，并识别视频内容。
 	- **参数**: `videoUrl` (字符串)。
 
 **注意：如果工具执行出错，必须在回复用户时说明。**
