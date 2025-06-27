@@ -14,13 +14,13 @@ async function webhookHandler(request, env, ctx) {
 
 	// 验证请求方法
 	if (request.method !== 'POST') {
-		return new Response('Method Not Allowed', { status: 405 });
+		return new Response('Method Not Allowed', { status: 200 });
 	}
 
 	// 验证 Secret Token
 	const secretToken = request.headers.get('x-telegram-bot-api-secret-token');
 	if (!secretToken || secretToken !== config.secretToken) {
-		return new Response('Unauthorized', { status: 401 });
+		return new Response('Unauthorized', { status: 200 });
 	}
 
 	try {
@@ -34,7 +34,7 @@ async function webhookHandler(request, env, ctx) {
 		return response;
 	} catch (error) {
 		console.error('Error processing webhook:', error);
-		return new Response('Error processing webhook request', { status: 500 });
+		return new Response('Error processing webhook request', { status: 200 });
 	}
 }
 
