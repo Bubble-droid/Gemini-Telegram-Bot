@@ -1,6 +1,10 @@
 # other
 
 wrangler.jsonc
+.roo/
+.vscode/
+draft/
+Gemini-Telegram-Bot.code-workspace
 
 # Logs
 
@@ -174,10 +178,3 @@ dist
 
 .dev.vars
 .wrangler/
-
-# other
-
-.roo/
-.vscode/
-draft/
-Gemini-Telegram-Bot.code-workspace
