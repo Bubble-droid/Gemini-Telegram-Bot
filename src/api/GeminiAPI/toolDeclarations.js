@@ -22,7 +22,6 @@ const tools = [
 								title: 'Asset Path Item',
 								description: '单个文件的完整路径，格式为 "owner/repo/refs/heads/branch/path/to/file.ext"',
 								example: 'MetaCubeX/Meta-docs/refs/heads/main/docs/api/index.md',
-								pattern: '^[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/(refs/heads/[a-zA-Z0-9_-]+|tags/[a-zA-Z0-9_.-]+|commit/[0-9a-fA-F]{40})/.+$',
 							},
 							minItems: 1,
 							example: ['MetaCubeX/Meta-docs/refs/heads/main/docs/api/index.md', 'SagerNet/sing-box/refs/heads/dev-next/src/main.go'],
@@ -504,7 +503,6 @@ const tools = [
 							type: Type.STRING,
 							description: '要查询的提交的 SHA 值，例如 "2464ced48c504eb0dee616c6d474813621779afc"。',
 							example: '2464ced48c504eb0dee616c6d474813621779afc',
-							pattern: '^[0-9a-fA-F]{40}$', // SHA-1 hash pattern
 						},
 					},
 					required: ['owner', 'repo', 'commit_sha'],
@@ -742,7 +740,6 @@ const tools = [
 							type: Type.STRING,
 							description: '在线媒体文件的完整URL，例如 "https://example.com/image.jpg"。',
 							example: 'https://example.com/image.jpg',
-							pattern: '^https?://[^\\s/$.?#].[^\\s]*$', // Basic URL pattern
 						},
 						fileName: {
 							type: Type.STRING,
