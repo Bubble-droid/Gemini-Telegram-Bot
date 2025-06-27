@@ -712,7 +712,7 @@ const tools = [
 					properties: {
 						fileData: {
 							type: Type.OBJECT,
-							description: '用于识别的文件数据',
+							description: '用于识别的视频数据',
 							properties: {
 								fileUri: {
 									type: Type.STRING,
