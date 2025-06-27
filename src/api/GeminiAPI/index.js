@@ -43,7 +43,7 @@ class GeminiApi {
 		// 配置 API 请求
 		const baseConfig = {
 			maxOutputTokens: 65536,
-			temperature: 0.15,
+			temperature: 0,
 			thinkingConfig: {
 				thinkingBudget: 24576,
 			},
