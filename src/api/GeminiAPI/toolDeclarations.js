@@ -23,7 +23,7 @@ const tools = [
 								description: '单个文件的完整路径，格式为 "owner/repo/refs/heads/branch/path/to/file.ext"',
 								example: 'MetaCubeX/Meta-docs/refs/heads/main/docs/api/index.md',
 							},
-							minItems: 1,
+							minItems: 4,
 							example: ['MetaCubeX/Meta-docs/refs/heads/main/docs/api/index.md', 'SagerNet/sing-box/refs/heads/dev-next/src/main.go'],
 						},
 					},
@@ -706,27 +706,27 @@ const tools = [
 					},
 					required: ['videoUrl'],
 				},
-				response: {
-					type: Type.OBJECT,
-					title: 'Get Youtube Video Link Response',
-					properties: {
-						fileData: {
-							type: Type.OBJECT,
-							description: '用于直接作为 Gemini 的文件内容的数据。',
-							properties: {
-								fileUri: {
-									type: Type.STRING,
-									description: 'YouTube 视频的 URI。',
-								},
-							},
-							required: ['fileUri'],
-						},
-						error: {
-							type: Type.STRING,
-							description: '如果发生错误，则包含错误信息。',
-						},
-					},
-				},
+				// response: {
+				// 	type: Type.OBJECT,
+				// 	title: 'Get Youtube Video Link Response',
+				// 	properties: {
+				// 		fileData: {
+				// 			type: Type.OBJECT,
+				// 			description: '用于直接作为 Gemini 的文件内容的数据。',
+				// 			properties: {
+				// 				fileUri: {
+				// 					type: Type.STRING,
+				// 					description: 'YouTube 视频的 URI。',
+				// 				},
+				// 			},
+				// 			required: ['fileUri'],
+				// 		},
+				// 		error: {
+				// 			type: Type.STRING,
+				// 			description: '如果发生错误，则包含错误信息。',
+				// 		},
+				// 	},
+				// },
 			},
 			{
 				name: 'getOnlineMediaFile',
@@ -754,31 +754,31 @@ const tools = [
 					},
 					required: ['fileUrl', 'fileName', 'mimeType'],
 				},
-				response: {
-					type: Type.OBJECT,
-					title: 'Get Online Media File Response',
-					properties: {
-						fileData: {
-							type: Type.OBJECT,
-							description: '用于直接作为 Gemini 的文件内容的数据。',
-							properties: {
-								fileUri: {
-									type: Type.STRING,
-									description: '在线媒体文件的 URI。',
-								},
-								mimeType: {
-									type: Type.STRING,
-									description: '在线媒体文件的 MIME 类型。',
-								},
-							},
-							required: ['fileUri', 'mimeType'],
-						},
-						error: {
-							type: Type.STRING,
-							description: '如果发生错误，则包含错误信息。',
-						},
-					},
-				},
+				// response: {
+				// 	type: Type.OBJECT,
+				// 	title: 'Get Online Media File Response',
+				// 	properties: {
+				// 		fileData: {
+				// 			type: Type.OBJECT,
+				// 			description: '用于直接作为 Gemini 的文件内容的数据。',
+				// 			properties: {
+				// 				fileUri: {
+				// 					type: Type.STRING,
+				// 					description: '在线媒体文件的 URI。',
+				// 				},
+				// 				mimeType: {
+				// 					type: Type.STRING,
+				// 					description: '在线媒体文件的 MIME 类型。',
+				// 				},
+				// 			},
+				// 			required: ['fileUri', 'mimeType'],
+				// 		},
+				// 		error: {
+				// 			type: Type.STRING,
+				// 			description: '如果发生错误，则包含错误信息。',
+				// 		},
+				// 	},
+				// },
 			},
 		],
 	},
