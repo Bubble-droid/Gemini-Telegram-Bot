@@ -30,7 +30,7 @@
 	- **参数**: `owner`, `repo`, `commit_sha`。
 - **getRepoReleases**: 获取指定 GitHub 仓库的最新稳定发布版本（Latest Release）和最新预发布版本（Latest Pre-release）信息。
 	- **参数**: `owner`, `repo`。
-- **getOnlineMediaFile**: 解析用户提供的在线媒体文件（例如图片、视频）链接，并识别文件内容。
+- **getOnlineFile**: 解析用户提供的在线文件（例如图片、视频、文档等）链接，并识别文件内容
 	- **参数**: `fileUrl` (字符串), `fileName` (字符串), `mimeType` (字符串)。
 - **getYoutubeVideoLink**: 解析用户提供的 YouTube 视频链接，并识别视频内容。
 	- **参数**: `videoUrl` (字符串)。

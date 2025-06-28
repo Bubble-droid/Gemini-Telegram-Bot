@@ -729,8 +729,8 @@ const tools = [
 				},
 			},
 			{
-				name: 'getOnlineMediaFile',
-				description: '解析用户提供的在线媒体文件（例如图片、视频）链接，并识别文件内容。',
+				name: 'getOnlineFile',
+				description: '解析用户提供的在线文件（例如图片、视频、文档等）链接，并识别文件内容。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -738,7 +738,7 @@ const tools = [
 					properties: {
 						fileUrl: {
 							type: Type.STRING,
-							description: '在线媒体文件的完整 URL，例如 "https://example.com/image.jpg"。',
+							description: '在线文件的完整 URL，例如 "https://example.com/image.jpg"。',
 							example: 'https://example.com/image.jpg',
 						},
 						fileName: {
@@ -764,11 +764,11 @@ const tools = [
 							properties: {
 								fileUri: {
 									type: Type.STRING,
-									description: '在线媒体文件的 URI。',
+									description: '在线文件的 URI。',
 								},
 								mimeType: {
 									type: Type.STRING,
-									description: '在线媒体文件的 MIME 类型。',
+									description: '在线文件的 MIME 类型。',
 								},
 							},
 							required: ['fileUri', 'mimeType'],

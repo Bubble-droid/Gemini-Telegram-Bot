@@ -587,17 +587,17 @@ const toolExecutors = {
 	},
 
 	/**
-	 * 执行 getOnlineMediaFile 工具
+	 * 执行 getOnlineFile 工具
 	 * @param {object} args - 工具调用时传递的参数对象，例如 { fileUrl: '...', fileName: '...', mimeType: '...' }
 	 * @returns {Promise<object>} - 工具执行结果对象，包含 fileData 字段，用于直接作为 Gemini 的文件内容。
 	 */
-	getOnlineMediaFile: async (args) => {
-		console.log('执行工具: getOnlineMediaFile, 参数:', args);
+	getOnlineFile: async (args) => {
+		console.log('执行工具: getOnlineFile, 参数:', args);
 		const { fileUrl, fileName, mimeType } = args;
 
 		if (!fileUrl || !fileName || !mimeType) {
-			console.warn('getOnlineMediaFile 工具调用参数无效: 缺少 fileUrl, fileName 或 mimeType。');
-			return { error: 'getOnlineMediaFile 工具调用参数无效，缺少必要参数。' };
+			console.warn('getOnlineFile 工具调用参数无效: 缺少 fileUrl, fileName 或 mimeType。');
+			return { error: 'getOnlineFile 工具调用参数无效，缺少必要参数。' };
 		}
 
 		try {
@@ -608,7 +608,7 @@ const toolExecutors = {
 				mimeType,
 			});
 			if (mediaFile && mediaFile.uri && mediaFile.mimeType) {
-				console.log(`在线媒体文件 ${fileName} 上传成功，URI: ${mediaFile.uri}`);
+				console.log(`在线文件 ${fileName} 上传成功，URI: ${mediaFile.uri}`);
 				// 返回符合 Gemini API 期望的 fileData 格式
 				return {
 					fileData: {
@@ -617,12 +617,12 @@ const toolExecutors = {
 					},
 				};
 			} else {
-				console.warn('上传在线媒体文件到 Gemini 失败。');
-				return { error: '上传在线媒体文件到 Gemini 失败。' };
+				console.warn('上传在线文件到 Gemini 失败。');
+				return { error: '上传在线文件到 Gemini 失败。' };
 			}
 		} catch (error) {
-			console.warn(`执行 getOnlineMediaFile 失败: ${error.message}`);
-			return { error: `执行 getOnlineMediaFile 失败 - ${error.message || '未知错误'}` };
+			console.warn(`执行 getOnlineFile 失败: ${error.message}`);
+			return { error: `执行 getOnlineFile 失败 - ${error.message || '未知错误'}` };
 		}
 	},
 
