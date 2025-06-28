@@ -749,7 +749,7 @@ const tools = [
 						mimeType: {
 							type: Type.STRING,
 							description:
-								'文件的MIME类型，图片类文件同一为 "image/jpeg"，视频和动态图片类文件统一为 "video/mp4"，可直接读取的文本类文件统一为 "text/plain"',
+								'文件的MIME类型，图片类文件同一为 "image/jpeg"，视频和动态图片类文件统一为 "video/mp4"，可直接读取内容的文本类文件统一为 "text/plain"',
 							example: 'image/jpeg',
 							enum: ['image/jpeg', 'video/mp4', 'text/plain'],
 						},
