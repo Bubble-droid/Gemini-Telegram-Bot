@@ -108,6 +108,7 @@ class GeminiApi {
 					const callTexts =
 						parts
 							.filter((part) => part.text)
+							.map((part) => part?.text.trim())
 							.join('')
 							.trim() || '';
 
@@ -235,4 +236,3 @@ class GeminiApi {
 }
 
 export default GeminiApi;
-
