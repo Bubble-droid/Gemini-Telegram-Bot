@@ -87,9 +87,14 @@ async function extractMessageParts(message, env, botName) {
 async function handleMentionMessage(message, env, isChat = false) {
 	console.log('Received message:', JSON.stringify(message, null, 2));
 	console.log('Handling mention message...');
+	const {
+		message_id: replyToMessageId,
+		from: { id: userId },
+		chat: { id: chatId },
+	} = message;
 	const config = getConfig(env);
 	const bot = new TelegramBot(env);
-	const geminiApi = new GeminiApi(env);
+	const geminiApi = new GeminiApi(env, chatId, replyToMessageId);
 	const adminId = config.adminId;
 	const botName = config.botName;
 	const messageText = message.text || message.caption || ''; // Keep original text for mention check
@@ -104,12 +109,6 @@ async function handleMentionMessage(message, env, isChat = false) {
 		}
 
 		console.log('Mention verified.');
-
-		const {
-			message_id: replyToMessageId,
-			from: { id: userId },
-			chat: { id: chatId },
-		} = message;
 
 		if (!messageText.replace(botName, '').trim() && !hasFileInCurrentMessage && !message.reply_to_message) {
 			console.log('No valid content to send to Gemini API.');

@@ -5,6 +5,7 @@ import getConfig from '../../env';
 import kvRead from '../../kvManager/kvRead';
 import tools from './toolDeclarations';
 import toolExecutors from './toolExecutors';
+import sendFormattedMessage from '../../utils/messageFormatting/sendMessage';
 
 /**
  * 封装 Gemini API 调用逻辑
@@ -13,13 +14,15 @@ class GeminiApi {
 	/**
 	 * @param {object} env - Cloudflare Worker 的环境变量对象
 	 */
-	constructor(env) {
+	constructor(env, chatId, replyToMessageId) {
 		const config = getConfig(env);
 		this.genai = new GoogleGenAI({ apiKey: config.apiKey });
 		this.model = config.modelName;
 		this.botConfigKv = config.botConfigKv;
 		this.systemPromptKey = 'system_prompt';
 		this.env = env;
+		this.chatId = chatId;
+		this.replyToMessageId = replyToMessageId;
 		this.tools = tools;
 		this.toolExecutors = toolExecutors;
 		this.toolExecutors.env = env;
@@ -101,6 +104,16 @@ class GeminiApi {
 
 				if (functionCalls.length > 0) {
 					console.log(`检测到工具调用 (${functionCalls.length} 个)`);
+
+					const callTexts =
+						parts
+							.filter((part) => part.text)
+							.join('')
+							.trim() || '';
+
+					if (callTexts) {
+						await sendFormattedMessage(this.env, this.chatId, callTexts, this.replyToMessageId);
+					}
 
 					// 将模型的工具调用回复（包括文本和工具调用）添加到消息历史
 					contents.push({
@@ -222,3 +235,4 @@ class GeminiApi {
 }
 
 export default GeminiApi;
+
