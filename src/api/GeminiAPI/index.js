@@ -86,10 +86,9 @@ class GeminiApi {
 					if (retryCount < MAX_RETRIES) {
 						retryCount++;
 						console.log(`Gemini API 响应为空，进行第 ${retryCount} 次重试...`);
-						await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount)); // 每次重试间隔递增
-						continue; // 继续下一次循环，进行重试
+						await new Promise((resolve) => setTimeout(resolve, 30 * 1_000));
 					} else {
-						throw new Error(`Gemini API 未返回有效结果，已达最大重试次数 (${MAX_RETRIES})`);
+						throw new Error(`Gemini API 未返回有效结果，已达最大重试次数 (${MAX_RETRIES})，请稍后再重新提问`);
 					}
 				}
 
