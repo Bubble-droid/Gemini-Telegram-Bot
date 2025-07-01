@@ -81,12 +81,13 @@ class GeminiApi {
 
 				const candidate = response?.candidates?.[0];
 
-				if (!candidate || !candidate.content || !candidate.content.parts) {
+				if (!candidate || !candidate?.content || !candidate.content?.parts) {
 					console.warn('Gemini API 返回结果不包含有效的 candidate 或 content:', JSON.stringify(response, null, 2));
 					if (retryCount < MAX_RETRIES) {
 						retryCount++;
 						console.log(`Gemini API 响应为空，进行第 ${retryCount} 次重试...`);
-						await new Promise((resolve) => setTimeout(resolve, 30 * 1_000));
+						await new Promise((resolve) => setTimeout(resolve, 10 * 1_000));
+						continue;
 					} else {
 						throw new Error(`Gemini API 未返回有效结果，已达最大重试次数 (${MAX_RETRIES})，请稍后再重新提问`);
 					}
@@ -95,7 +96,7 @@ class GeminiApi {
 				// 重置重试计数，因为成功获取到有效响应
 				retryCount = 0;
 
-				const parts = candidate.content.parts;
+				const parts = candidate.content?.parts || [];
 				const functionCalls = parts.filter((part) => part.functionCall);
 
 				if (functionCalls.length > 0) {
@@ -221,4 +222,3 @@ class GeminiApi {
 }
 
 export default GeminiApi;
-
