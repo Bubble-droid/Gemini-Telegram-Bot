@@ -1,5 +1,6 @@
 // src/index.js
 
+import { DurableObject } from 'cloudflare:workers';
 import webhookHandler from './handlers/webhookHandler';
 import processScheduledTask from './utils/taskProcess';
 
@@ -25,7 +26,7 @@ export default {
 					headers: {
 						'Content-Type': 'text/plain',
 					},
-					status: 200
+					status: 200,
 				});
 			}
 		} catch (error) {
@@ -50,7 +51,7 @@ export default {
 };
 
 // TimerDO 类保持不变，用于处理 Durable Object 的定时任务
-export class TimerDO {
+export class TimerDO extends DurableObject {
 	constructor(ctx, env) {
 		this.state = ctx.storage;
 		this.env = env;

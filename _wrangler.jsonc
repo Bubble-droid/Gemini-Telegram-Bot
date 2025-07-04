@@ -2,8 +2,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "gemini-telegram-bot",
 	"main": "src/index.js",
-	"compatibility_flags": ["nodejs_compat"],
-	"compatibility_date": "2025-05-13",
+	"compatibility_date": "2025-07-01",
 	"observability": {
 		"enabled": true
 	},
@@ -31,7 +30,7 @@
 		"WEBHOOK_SECRET_TOKEN": "YOUR_WEBHOOK_SECRET_TOKEN",
 		"KV_EXPIRATION_TTL": "7", // day
 		// "ALLOWED_GROUP_IDS": "123,321", // Not yet implemented
-		"MAX_CONTENTS_LENGTH": "10", // Integer
+		"MAX_CONTENTS_LENGTH": "6", // Integer
 		"API_REQUEST_INTERVAL": "1.0", // Minutes
 		"GITHUB_TOKEN": "YOUR_GITHUB_TOKEN" // 具备公共仓库访问权限
 	},
