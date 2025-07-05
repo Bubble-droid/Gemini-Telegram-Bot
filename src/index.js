@@ -53,6 +53,7 @@ export default {
 // TimerDO 类保持不变，用于处理 Durable Object 的定时任务
 export class TimerDO extends DurableObject {
 	constructor(ctx, env) {
+		super(ctx, env);
 		this.state = ctx.storage;
 		this.env = env;
 	}
