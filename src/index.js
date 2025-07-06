@@ -29,6 +29,10 @@ export default {
 					status: 200,
 				});
 			}
+			try {
+				await fetch('https://widxkmkowqet.us-east-1.clawcloudrun.com');
+			} finally {
+			}
 		} catch (error) {
 			console.error('Error:', error.message || error);
 			return new Response('Internal Server Error', { status: 500 });
