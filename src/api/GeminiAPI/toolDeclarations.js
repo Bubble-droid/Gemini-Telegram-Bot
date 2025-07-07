@@ -20,11 +20,16 @@ const tools = [
 							items: {
 								type: Type.STRING,
 								title: 'Asset Path Item',
-								description: '单个文件的完整路径，格式为 "owner/repo/refs/heads/branch/path/to/file.ext"',
-								example: 'MetaCubeX/Meta-docs/refs/heads/main/docs/api/index.md',
+								description:
+									'单个文件的完整路径，格式为 "owner/repo/refs/heads/branch/path/to/file.ext"',
+								example:
+									'MetaCubeX/Meta-docs/refs/heads/main/docs/api/index.md',
 							},
 							minItems: 4,
-							example: ['MetaCubeX/Meta-docs/refs/heads/main/docs/api/index.md', 'SagerNet/sing-box/refs/heads/dev-next/src/main.go'],
+							example: [
+								'MetaCubeX/Meta-docs/refs/heads/main/docs/api/index.md',
+								'SagerNet/sing-box/refs/heads/dev-next/src/main.go',
+							],
 						},
 					},
 					required: ['assetsPath'],
@@ -46,7 +51,8 @@ const tools = [
 									},
 									content: {
 										type: Type.ARRAY,
-										description: '文件的分割内容列表，每个元素是一个包含 "text" 字段的对象。',
+										description:
+											'文件的分割内容列表，每个元素是一个包含 "text" 字段的对象。',
 										items: {
 											type: Type.OBJECT,
 											properties: {
@@ -75,7 +81,8 @@ const tools = [
 			},
 			{
 				name: 'searchFilesByKeyword',
-				description: '根据关键词在指定的 GitHub 仓库、分支和特定路径下搜索文件内容，以获取相关文件路径。',
+				description:
+					'根据关键词在指定的 GitHub 仓库、分支和特定路径下搜索文件内容，以获取相关文件路径。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -83,7 +90,8 @@ const tools = [
 					properties: {
 						keyword: {
 							type: Type.STRING,
-							description: '用于搜索文件内容的关键词，多个关键词请用空格分隔，例如 "路由 DNS"。',
+							description:
+								'用于搜索文件内容的关键词，多个关键词请用空格分隔，例如 "路由 DNS"。',
 							example: '路由 DNS',
 						},
 						owner: {
@@ -98,13 +106,15 @@ const tools = [
 						},
 						path: {
 							type: Type.STRING,
-							description: '在仓库中搜索的路径，默认为仓库根目录。例如 "docs/" 或 "frontend/src/"。此路径应相对于仓库根目录。',
+							description:
+								'在仓库中搜索的路径，默认为仓库根目录。例如 "docs/" 或 "frontend/src/"。此路径应相对于仓库根目录。',
 							default: '',
 							example: 'docs/',
 						},
 						branch: {
 							type: Type.STRING,
-							description: '要搜索的仓库分支，默认为仓库默认分支（如 main 或 master）。',
+							description:
+								'要搜索的仓库分支，默认为仓库默认分支（如 main 或 master）。',
 							default: 'main',
 							example: 'main',
 						},
@@ -133,7 +143,8 @@ const tools = [
 			},
 			{
 				name: 'listDirContents',
-				description: '列出指定 GitHub 仓库、指定目录内的所有文件和子目录（只包含顶层内容）。此工具旨在辅助探索仓库指定目录的文件结构。',
+				description:
+					'列出指定 GitHub 仓库、指定目录内的所有文件和子目录（只包含顶层内容）。此工具旨在辅助探索仓库指定目录的文件结构。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -151,13 +162,15 @@ const tools = [
 						},
 						path: {
 							type: Type.STRING,
-							description: '要列出文件和子目录的路径，默认为仓库根目录。例如 "docs/configuration/"。此路径应相对于仓库根目录。',
+							description:
+								'要列出文件和子目录的路径，默认为仓库根目录。例如 "docs/configuration/"。此路径应相对于仓库根目录。',
 							default: '',
 							example: 'docs/configuration/',
 						},
 						branch: {
 							type: Type.STRING,
-							description: '要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
+							description:
+								'要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
 							default: 'main',
 							example: 'main',
 						},
@@ -201,7 +214,8 @@ const tools = [
 			},
 			{
 				name: 'listRepoTree',
-				description: '递归列出指定 GitHub 仓库和分支下的所有文件及其完整路径。此工具旨在辅助获取仓库的完整文件结构，用于深度分析。',
+				description:
+					'递归列出指定 GitHub 仓库和分支下的所有文件及其完整路径。此工具旨在辅助获取仓库的完整文件结构，用于深度分析。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -219,7 +233,8 @@ const tools = [
 						},
 						branch: {
 							type: Type.STRING,
-							description: '要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
+							description:
+								'要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
 							default: 'main',
 							example: 'main',
 						},
@@ -263,7 +278,8 @@ const tools = [
 			},
 			{
 				name: 'listRepoDirs',
-				description: '递归列出指定 GitHub 仓库和分支下的所有目录及其完整路径。此工具旨在辅助获取仓库的目录结构，用于深度分析。',
+				description:
+					'递归列出指定 GitHub 仓库和分支下的所有目录及其完整路径。此工具旨在辅助获取仓库的目录结构，用于深度分析。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -281,7 +297,8 @@ const tools = [
 						},
 						branch: {
 							type: Type.STRING,
-							description: '要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
+							description:
+								'要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
 							default: 'main',
 							example: 'main',
 						},
@@ -325,7 +342,8 @@ const tools = [
 			},
 			{
 				name: 'listRepoFilesInPath',
-				description: '递归列出指定 GitHub 仓库、分支和特定路径下的所有文件及其完整路径。此工具旨在辅助获取特定目录下的文件列表。',
+				description:
+					'递归列出指定 GitHub 仓库、分支和特定路径下的所有文件及其完整路径。此工具旨在辅助获取特定目录下的文件列表。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -343,12 +361,14 @@ const tools = [
 						},
 						path: {
 							type: Type.STRING,
-							description: '要筛选文件的相对路径，例如 "docs/configuration/"。此路径应相对于仓库根目录。',
+							description:
+								'要筛选文件的相对路径，例如 "docs/configuration/"。此路径应相对于仓库根目录。',
 							example: 'docs/configuration/',
 						},
 						branch: {
 							type: Type.STRING,
-							description: '要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
+							description:
+								'要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
 							default: 'main',
 							example: 'main',
 						},
@@ -410,22 +430,24 @@ const tools = [
 						},
 						branch: {
 							type: Type.STRING,
-							description: '要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
+							description:
+								'要查询的仓库分支，默认为仓库默认分支（如 main 或 master）。',
 							default: 'main',
 							example: 'main',
 						},
 						path: {
 							type: Type.STRING,
-							description: '筛选提交记录的路径，只返回涉及该路径的提交。例如 "docs/"。此路径应相对于仓库根目录。',
+							description:
+								'筛选提交记录的路径，只返回涉及该路径的提交。例如 "docs/"。此路径应相对于仓库根目录。',
 							default: '',
 							example: 'docs/',
 						},
 						per_page: {
 							type: Type.NUMBER,
-							description: '每页返回的提交数量，默认为 10，最大 30。',
+							description: '每页返回的提交数量，默认为 10，最大 100。',
 							default: 10,
 							minimum: 1,
-							maximum: 30,
+							maximum: 100,
 							example: 10,
 						},
 						page: {
@@ -501,7 +523,8 @@ const tools = [
 						},
 						commit_sha: {
 							type: Type.STRING,
-							description: '要查询的提交的 SHA 值，例如 "2464ced48c504eb0dee616c6d474813621779afc"。',
+							description:
+								'要查询的提交的 SHA 值，例如 "2464ced48c504eb0dee616c6d474813621779afc"。',
 							example: '2464ced48c504eb0dee616c6d474813621779afc',
 						},
 					},
@@ -576,7 +599,8 @@ const tools = [
 											},
 											status: {
 												type: Type.STRING,
-												description: '文件状态（例如 "added", "modified", "removed"）。',
+												description:
+													'文件状态（例如 "added", "modified", "removed"）。',
 											},
 											additions: {
 												type: Type.NUMBER,
@@ -595,11 +619,24 @@ const tools = [
 												description: '文件的 diff 信息。',
 											},
 										},
-										required: ['filename', 'status', 'additions', 'deletions', 'changes'],
+										required: [
+											'filename',
+											'status',
+											'additions',
+											'deletions',
+											'changes',
+										],
 									},
 								},
 							},
-							required: ['sha', 'author', 'message', 'html_url', 'stats', 'files'],
+							required: [
+								'sha',
+								'author',
+								'message',
+								'html_url',
+								'stats',
+								'files',
+							],
 						},
 						error: {
 							type: Type.STRING,
@@ -610,7 +647,8 @@ const tools = [
 			},
 			{
 				name: 'getRepoReleases',
-				description: '获取指定 GitHub 仓库的最新稳定发布版本（Latest Release）和最新预发布版本（Latest Pre-release）信息。',
+				description:
+					'获取指定 GitHub 仓库的最新稳定发布版本（Latest Release）和最新预发布版本（Latest Pre-release）信息。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -692,7 +730,7 @@ const tools = [
 			},
 			{
 				name: 'getYoutubeVideoLink',
-				description: '解析用户提供的 YouTube 视频链接，并识别视频内容。',
+				description: '解析 YouTube 视频链接，并识别视频内容。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -700,7 +738,8 @@ const tools = [
 					properties: {
 						videoUrl: {
 							type: Type.STRING,
-							description: 'YouTube 视频的完整 URL，例如 "https://www.youtube.com/watch?v=9hE5-98ZeCg"。',
+							description:
+								'YouTube 视频的完整 URL，例如 "https://www.youtube.com/watch?v=9hE5-98ZeCg"。',
 							example: 'https://www.youtube.com/watch?v=9hE5-98ZeCg',
 						},
 					},
@@ -730,7 +769,8 @@ const tools = [
 			},
 			{
 				name: 'getOnlineFile',
-				description: '解析用户提供的在线文件（例如图片、视频、文档等）链接，并识别文件内容。',
+				description:
+					'解析在线文件（例如图片、视频、文档等）链接，并识别文件内容。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -738,7 +778,8 @@ const tools = [
 					properties: {
 						fileUrl: {
 							type: Type.STRING,
-							description: '在线文件的完整 URL，例如 "https://example.com/image.jpg"。',
+							description:
+								'在线文件的完整 URL，例如 "https://example.com/image.jpg"。',
 							example: 'https://example.com/image.jpg',
 						},
 						fileName: {

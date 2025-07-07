@@ -21,7 +21,7 @@ async function scheduleTask(env, action, params, delayMs = 60 * 1_000) {
 		})
 	);
 	console.log(
-		`Registering scheduled task with name: ${name}, execute after after ${
+		`Registering scheduled task with name: ${name}, execute after ${
 			delayMs / 1_000
 		} s`
 	);

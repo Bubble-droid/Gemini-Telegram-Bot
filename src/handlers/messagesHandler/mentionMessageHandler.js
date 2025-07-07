@@ -241,12 +241,6 @@ async function handleMentionMessage(message, env, isChat = false) {
 		try {
 			const response = await geminiApi.generateContent(contents);
 
-			// console.log('Gemini API response:', JSON.stringify(response, null, 2));
-
-			if (!response) {
-				console.log('Gemini API returned an empty response.');
-				return true; // 消息已被处理 (错误情况)
-			}
 			const thoughtTexts =
 				response.parts
 					.filter((part) => part.thought)
@@ -272,12 +266,14 @@ async function handleMentionMessage(message, env, isChat = false) {
 					.join('')
 					.trim() || '';
 
-			if (!resTexts) {
+			if (!resTexts && !thoughtTexts) {
 				console.log('Gemini API returned empty response.');
 				throw new Error('Gemini API returned an empty response.');
 			}
 
-			const fullText = `${resTexts}\n\n------\n\n⚠️ AI 的回答无法保证百分百准确，请自行判断！`;
+			const fullText = resTexts
+				? `${resTexts}\n\n------\n\n⚠️ AI 的回答无法保证百分百准确，请自行判断！`
+				: `Gemini API 未返回有效结果：未知原因，请稍后再试。`;
 
 			const { ok, error: sendError } = await sendFormattedMessage(
 				env,
