@@ -20,6 +20,9 @@ async function scheduleTask(env, action, params, delayMs = 60 * 1_000) {
 			body: JSON.stringify({ action, params, delayMs }),
 		})
 	);
+	console.log(
+		`Registering scheduled task with name: ${name}, execute after after ${delayMs} ms`
+	);
 	return res.json();
 }
 
