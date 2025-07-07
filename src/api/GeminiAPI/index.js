@@ -5,6 +5,7 @@ import getConfig from '../../env';
 import kvRead from '../../kvManager/kvRead';
 import tools from './toolDeclarations';
 import toolExecutors from './toolExecutors';
+import TelegramBot from '../TelegramBot';
 
 /**
  * 封装 Gemini API 调用逻辑
@@ -13,13 +14,16 @@ class GeminiApi {
 	/**
 	 * @param {object} env - Cloudflare Worker 的环境变量对象
 	 */
-	constructor(env) {
+	constructor(env, params) {
 		const config = getConfig(env);
 		this.genai = new GoogleGenAI({ apiKey: config.apiKey });
+		this.bot = new TelegramBot(env);
 		this.model = config.modelName;
 		this.botConfigKv = config.botConfigKv;
 		this.systemPromptKey = 'system_prompt';
 		this.env = env;
+		this.chatId = params.chatId;
+		this.messageId = params.thinkMessageId;
 		this.tools = tools;
 		this.toolExecutors = toolExecutors;
 		this.toolExecutors.env = env;
@@ -105,6 +109,19 @@ class GeminiApi {
 				const functionCalls = parts.filter((part) => part.functionCall);
 
 				if (functionCalls.length > 0) {
+					const functionTexts = parts.filter((part) => part.text);
+					if (functionTexts.length > 0) {
+						this.bot.editMessageText({
+							chat_id: this.chatId,
+							message_id: this.messageId,
+							text: functionTexts
+								.map((part) => part.text)
+								.join('')
+								.trim()
+								.replace(/^/gm, '>> '),
+						});
+					}
+
 					console.log(`检测到工具调用 (${functionCalls.length} 个)`);
 
 					// 将模型的工具调用回复（包括文本和工具调用）添加到消息历史

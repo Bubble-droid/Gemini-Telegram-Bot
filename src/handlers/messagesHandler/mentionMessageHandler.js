@@ -89,13 +89,14 @@ async function handleMentionMessage(message, env, isChat = false) {
 	console.log('Handling mention message...');
 	const config = getConfig(env);
 	const bot = new TelegramBot(env);
-	const geminiApi = new GeminiApi(env);
 	const adminId = config.adminId;
 	const botName = config.botName;
 	const messageText = message.text || message.caption || ''; // Keep original text for mention check
 
 	const hasFileInCurrentMessage = containsFile(message);
-	const hasFileInReplyMessage = message.reply_to_message ? containsFile(message.reply_to_message) : false;
+	const hasFileInReplyMessage = message.reply_to_message
+		? containsFile(message.reply_to_message)
+		: false;
 
 	try {
 		// 检查是否提及 Bot
@@ -111,7 +112,11 @@ async function handleMentionMessage(message, env, isChat = false) {
 			chat: { id: chatId },
 		} = message;
 
-		if (!messageText.replace(botName, '').trim() && !hasFileInCurrentMessage && !message.reply_to_message) {
+		if (
+			!messageText.replace(botName, '').trim() &&
+			!hasFileInCurrentMessage &&
+			!message.reply_to_message
+		) {
 			console.log('No valid content to send to Gemini API.');
 			const { message_id } = await bot.sendMessage({
 				chat_id: chatId,
@@ -124,10 +129,15 @@ async function handleMentionMessage(message, env, isChat = false) {
 			return true; // 消息已被处理 (错误情况)
 		}
 
-		const { canProceed, retryAfterSeconds } = await rateLimiterCheck(env, chatId);
+		const { canProceed, retryAfterSeconds } = await rateLimiterCheck(
+			env,
+			chatId
+		);
 
 		if (!canProceed && userId !== adminId) {
-			console.log(`Rate limit exceeded. Retry after ${retryAfterSeconds} seconds.`);
+			console.log(
+				`Rate limit exceeded. Retry after ${retryAfterSeconds} seconds.`
+			);
 			const { message_id } = await bot.sendMessage({
 				chat_id: chatId,
 				text: `超出速率限制，请等待 ${retryAfterSeconds} 秒后重试。`,
@@ -135,7 +145,12 @@ async function handleMentionMessage(message, env, isChat = false) {
 			});
 
 			if (message_id) {
-				await scheduleDeletion(env, chatId, message_id, Number(retryAfterSeconds) * 1_000);
+				await scheduleDeletion(
+					env,
+					chatId,
+					message_id,
+					Number(retryAfterSeconds) * 1_000
+				);
 			}
 			return true;
 		}
@@ -155,8 +170,15 @@ async function handleMentionMessage(message, env, isChat = false) {
 			// 处理 reply_to_message
 			if (message.reply_to_message) {
 				console.log('Handling reply_to_message...');
-				const replyParts = await extractMessageParts(message.reply_to_message, env, botName);
-				if (message.reply_to_message.from.username === botName.replace('@', '').trim()) {
+				const replyParts = await extractMessageParts(
+					message.reply_to_message,
+					env,
+					botName
+				);
+				if (
+					message.reply_to_message.from.username ===
+					botName.replace('@', '').trim()
+				) {
 					isChat = true;
 				}
 				if (replyParts.length > 0) {
@@ -168,7 +190,12 @@ async function handleMentionMessage(message, env, isChat = false) {
 			}
 
 			// 处理当前消息
-			const currentParts = await extractMessageParts(message, env, botName, replyToMessageId);
+			const currentParts = await extractMessageParts(
+				message,
+				env,
+				botName,
+				replyToMessageId
+			);
 			if (currentParts.length > 0) {
 				askContents.push({
 					role: 'user',
@@ -210,15 +237,9 @@ async function handleMentionMessage(message, env, isChat = false) {
 			reply_to_message_id: replyToMessageId,
 		});
 
+		const geminiApi = new GeminiApi(env, { chatId, thinkMessageId });
 		try {
 			const response = await geminiApi.generateContent(contents);
-
-			if (thinkMessageId) {
-				await bot.deleteMessage({
-					chat_id: chatId,
-					message_id: thinkMessageId,
-				});
-			}
 
 			// console.log('Gemini API response:', JSON.stringify(response, null, 2));
 
@@ -226,10 +247,26 @@ async function handleMentionMessage(message, env, isChat = false) {
 				console.log('Gemini API returned an empty response.');
 				return true; // 消息已被处理 (错误情况)
 			}
+			const thoughtTexts =
+				response.parts
+					.filter((part) => part.thought)
+					.map((part) => part.text)
+					.join('')
+					.trim()
+					.replace(/^/gm, '>> ') || '';
+
+			if (thoughtTexts) {
+				bot.editMessageText({
+					chat_id: chatId,
+					message_id: thinkMessageId,
+					text: thoughtTexts,
+				});
+			}
 
 			const resTexts =
 				response.parts
-					.map((part) => part?.text.trim())
+					.filter((part) => !part.thought)
+					.map((part) => part.text)
 					.join('')
 					.trim() || '';
 
@@ -240,7 +277,12 @@ async function handleMentionMessage(message, env, isChat = false) {
 
 			const fullText = `${resTexts}\n\n------\n\n⚠️ AI 的回答无法保证百分百准确，请自行判断！`;
 
-			const { ok, error: sendError } = await sendFormattedMessage(env, chatId, fullText, replyToMessageId);
+			const { ok, error: sendError } = await sendFormattedMessage(
+				env,
+				chatId,
+				fullText,
+				replyToMessageId
+			);
 
 			if (!ok) {
 				throw sendError || new Error('发送消息时发生未知错误');
@@ -248,6 +290,10 @@ async function handleMentionMessage(message, env, isChat = false) {
 
 			// 更新聊天记录，保存 askContents 和回复
 			await updateChatContents(env, chatId, userId, [...askContents, response]);
+
+			if (thinkMessageId) {
+				await scheduleDeletion(env, chatId, thinkMessageId, 10 * 60 * 1_000);
+			}
 		} catch (error) {
 			try {
 				if (thinkMessageId) {
