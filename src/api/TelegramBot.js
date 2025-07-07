@@ -40,7 +40,9 @@ class TelegramBot {
 
 			if (!response.ok || !result.ok) {
 				console.error(`Telegram API request failed for ${method}:`, result);
-				throw new Error(`Telegram API error: ${result.description || response.statusText}`);
+				throw new Error(
+					`Telegram API error: ${result.description || response.statusText}`
+				);
 			}
 
 			return result.result;
@@ -69,6 +71,29 @@ class TelegramBot {
 			return { ok: true, message_id: result.message_id };
 		} catch (error) {
 			console.error('Error in sendMessage:', error);
+			throw error;
+		}
+	}
+
+	/**
+	 * 编辑已发送的文本消息
+	 * @param {object} params - 包含编辑消息所需参数的对象 (如 chat_id, message_id, text, parse_mode 等)
+	 * @param {boolean} [isFormatted=true] - 是否对文本进行 Markdown 到 HTML 的格式转换
+	 * @returns {Promise<object>} API 响应对象
+	 */
+	async editMessageText(params, isFormatted = true) {
+		const body = {
+			chat_id: params.chat_id,
+			message_id: params.message_id,
+			text: isFormatted ? markdownToHtml(params.text) : params.text,
+			parse_mode: params.parse_mode || 'HTML',
+			link_preview_options: { is_disabled: true },
+		};
+		try {
+			const result = await this._sendRequest('editMessageText', body);
+			return { ok: true, message_id: result.message_id };
+		} catch (error) {
+			console.error('Error in editMessageText:', error);
 			throw error;
 		}
 	}
@@ -135,18 +160,6 @@ class TelegramBot {
 			throw error;
 		}
 	}
-
-	// 可以添加其他常用的 Telegram Bot API 方法，如 sendPhoto, answerCallbackQuery 等
-	// 例如：
-	// async sendPhoto(params) {
-	//     console.log("Sending photo with params:", params);
-	//     return this._sendRequest('sendPhoto', params);
-	// }
-
-	// async answerCallbackQuery(params) {
-	//     console.log("Answering callback query with params:", params);
-	//     return this._sendRequest('answerCallbackQuery', params);
-	// }
 }
 
 export default TelegramBot;
