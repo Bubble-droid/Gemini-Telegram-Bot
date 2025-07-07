@@ -115,12 +115,10 @@ class GeminiApi {
 							{
 								chat_id: this.chatId,
 								message_id: this.messageId,
-								text: functionTexts
+								text: `Thoughts:\n\n<blockquote expandable>${functionTexts
 									.map((part) => part.text)
 									.join('')
-									.trim()
-									.replace(/^/, '<blockquote expandable>')
-									.replace(/$/, '</blockquote>'),
+									.trim()}</blockquote>`,
 							},
 							false
 						);

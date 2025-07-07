@@ -259,9 +259,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 					{
 						chat_id: chatId,
 						message_id: thinkMessageId,
-						text: thoughtTexts
-							.replace(/^/, '<blockquote expandable>')
-							.replace(/$/, '</blockquote>'),
+						text: `Thoughts:\n\n<blockquote expandable>${thoughtTexts}</blockquote>`,
 					},
 					false
 				);
