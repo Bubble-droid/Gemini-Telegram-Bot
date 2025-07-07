@@ -34,7 +34,9 @@ class GeminiApi {
 	 */
 	async generateContent(initialContents) {
 		if (!initialContents || !Array.isArray(initialContents)) return null;
-		const systemPrompt = (await kvRead(this.botConfigKv, this.systemPromptKey)) || 'You are a helpful assistant.';
+		const systemPrompt =
+			(await kvRead(this.botConfigKv, this.systemPromptKey)) ||
+			'You are a helpful assistant.';
 
 		console.log(`systemPrompt: ${systemPrompt.slice(0, 200)}...`);
 
@@ -44,9 +46,7 @@ class GeminiApi {
 		const baseConfig = {
 			maxOutputTokens: 65536,
 			temperature: 0,
-			thinkingConfig: {
-				thinkingBudget: 24576,
-			},
+			thinkingConfig: { includeThoughts: true, thinkingBudget: -1 },
 			tools: this.tools,
 			toolConfig: {
 				functionCallingConfig: {
@@ -82,14 +82,19 @@ class GeminiApi {
 				const candidate = response?.candidates?.[0];
 
 				if (!candidate || !candidate?.content || !candidate.content?.parts) {
-					console.warn('Gemini API 返回结果不包含有效的 candidate 或 content:', JSON.stringify(response, null, 2));
+					console.warn(
+						'Gemini API 返回结果不包含有效的 candidate 或 content:',
+						JSON.stringify(response, null, 2)
+					);
 					if (retryCount < MAX_RETRIES) {
 						retryCount++;
 						console.log(`Gemini API 响应为空，进行第 ${retryCount} 次重试...`);
 						await new Promise((resolve) => setTimeout(resolve, 10 * 1_000));
 						continue;
 					} else {
-						throw new Error(`Gemini API 未返回有效结果，已达最大重试次数 (${MAX_RETRIES})，请稍后再重新提问`);
+						throw new Error(
+							`Gemini API 未返回有效结果，已达最大重试次数 (${MAX_RETRIES})，请稍后再重新提问`
+						);
 					}
 				}
 
@@ -117,9 +122,15 @@ class GeminiApi {
 						if (this.toolExecutors[functionName]) {
 							try {
 								// 执行对应的工具函数
-								const toolResult = await this.toolExecutors[functionName](functionArgs);
+								const toolResult = await this.toolExecutors[functionName](
+									functionArgs
+								);
 
-								if ((functionName === 'getOnlineFile' || functionName === 'getYoutubeVideoLink') && toolResult.fileData) {
+								if (
+									(functionName === 'getOnlineFile' ||
+										functionName === 'getYoutubeVideoLink') &&
+									toolResult.fileData
+								) {
 									toolResponseParts.push({
 										fileData: toolResult.fileData,
 									});
@@ -140,7 +151,9 @@ class GeminiApi {
 									functionResponse: {
 										name: functionName,
 										response: {
-											error: `错误：执行工具 ${functionName} 失败 - ${toolError.message || '未知错误'}`,
+											error: `错误：执行工具 ${functionName} 失败 - ${
+												toolError.message || '未知错误'
+											}`,
 										},
 									},
 								});
@@ -181,7 +194,9 @@ class GeminiApi {
 					const textParts = parts.filter((part) => part.text);
 
 					if (textParts.length > 0) {
-						console.log(`Gemini API request successful, returning text response.`);
+						console.log(
+							`Gemini API request successful, returning text response.`
+						);
 						// 返回完整的响应对象，符合最终回复格式
 						return {
 							role: 'model',
@@ -189,7 +204,10 @@ class GeminiApi {
 						};
 					} else {
 						// 如果既没有工具调用也没有文本回复
-						console.warn('Gemini API 返回非工具调用响应，但没有文本内容或其他可处理的 parts:', JSON.stringify(response, null, 2));
+						console.warn(
+							'Gemini API 返回非工具调用响应，但没有文本内容或其他可处理的 parts:',
+							JSON.stringify(response, null, 2)
+						);
 						// 可以检查 finishReason，例如是否是 "STOP"
 						const finishReason = candidate.finishReason;
 						if (finishReason === 'STOP') {
@@ -202,7 +220,11 @@ class GeminiApi {
 							// 其他 finishReason 可能需要进一步处理
 							return {
 								role: 'model',
-								parts: [{ text: `😥 抱歉，未能获取有效的文本回复，Finish Reason: ${finishReason}` }],
+								parts: [
+									{
+										text: `😥 抱歉，未能获取有效的文本回复，Finish Reason: ${finishReason}`,
+									},
+								],
 							};
 						}
 					}
