@@ -252,15 +252,19 @@ async function handleMentionMessage(message, env, isChat = false) {
 					.filter((part) => part.thought)
 					.map((part) => part.text)
 					.join('')
-					.trim()
-					.replace(/^/gm, '>> ') || '';
+					.trim() || '';
 
 			if (thoughtTexts) {
-				bot.editMessageText({
-					chat_id: chatId,
-					message_id: thinkMessageId,
-					text: thoughtTexts,
-				});
+				bot.editMessageText(
+					{
+						chat_id: chatId,
+						message_id: thinkMessageId,
+						text: thoughtTexts
+							.replace(/^/, '<blockquote expandable>')
+							.replace(/$/, '</blockquote>'),
+					},
+					false
+				);
 			}
 
 			const resTexts =

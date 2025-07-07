@@ -111,15 +111,19 @@ class GeminiApi {
 				if (functionCalls.length > 0) {
 					const functionTexts = parts.filter((part) => part.text);
 					if (functionTexts.length > 0) {
-						this.bot.editMessageText({
-							chat_id: this.chatId,
-							message_id: this.messageId,
-							text: functionTexts
-								.map((part) => part.text)
-								.join('')
-								.trim()
-								.replace(/^/gm, '>> '),
-						});
+						this.bot.editMessageText(
+							{
+								chat_id: this.chatId,
+								message_id: this.messageId,
+								text: functionTexts
+									.map((part) => part.text)
+									.join('')
+									.trim()
+									.replace(/^/, '<blockquote expandable>')
+									.replace(/$/, '</blockquote>'),
+							},
+							false
+						);
 					}
 
 					console.log(`检测到工具调用 (${functionCalls.length} 个)`);
