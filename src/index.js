@@ -29,10 +29,6 @@ export default {
 					status: 200,
 				});
 			}
-			try {
-				await fetch('https://widxkmkowqet.us-east-1.clawcloudrun.com');
-			} finally {
-			}
 		} catch (error) {
 			console.error('Error:', error.message || error);
 			return new Response('Internal Server Error', { status: 500 });
@@ -75,7 +71,9 @@ export class TimerDO extends DurableObject {
 		// 计算绝对触发时间并设置 Alarm
 		const runAt = Date.now() + delayMs;
 		await this.state.setAlarm(runAt);
-		return new Response(JSON.stringify({ status: 'scheduled', runAt }), { status: 200 });
+		return new Response(JSON.stringify({ status: 'scheduled', runAt }), {
+			status: 200,
+		});
 	}
 
 	/** Alarm 触发后调用此方法，执行对应 action */
