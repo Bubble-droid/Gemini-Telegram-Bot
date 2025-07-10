@@ -109,19 +109,36 @@ class GeminiApi {
 				const functionCalls = parts.filter((part) => part.functionCall);
 
 				if (functionCalls.length > 0) {
-					const functionTexts = parts.filter((part) => part.text);
+					const functionTexts = parts.filter((part) => part.text) || [];
 					if (functionTexts.length > 0) {
-						this.bot.editMessageText(
-							{
-								chat_id: this.chatId,
-								message_id: this.messageId,
-								text: `Thoughts:\n\n<blockquote expandable>${functionTexts
-									.map((part) => part.text)
-									.join('')
-									.trim()}</blockquote>`,
-							},
-							false
-						);
+						const thoughtTexts =
+							functionTexts
+								.map((part) => part.text)
+								.join('')
+								.trim() | '';
+
+						if (thoughtTexts) {
+							this.bot.editMessageText(
+								{
+									chat_id: this.chatId,
+									message_id: this.messageId,
+									text: `Thoughts:\n\n<blockquote expandable>${(() => {
+										const strArr = Array.from(thoughtTexts);
+										if (strArr.length > 4096) {
+											return `${strArr
+												.slice(0, 2000)
+												.join('')
+												.trim()}\n\n......\n\n${strArr
+												.slice(strArr.length - 2000)
+												.join('')
+												.trim()}`.trim();
+										}
+										return thoughtTexts;
+									})()}</blockquote>`,
+								},
+								false
+							);
+						}
 					}
 
 					console.log(`检测到工具调用 (${functionCalls.length} 个)`);

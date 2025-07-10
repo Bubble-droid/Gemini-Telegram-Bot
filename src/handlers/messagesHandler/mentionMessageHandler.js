@@ -202,7 +202,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 					parts: currentParts,
 				});
 			}
-		} catch (error) {
+		} catch (extractError) {
 			try {
 				if (uploadMessageId) {
 					await bot.deleteMessage({
@@ -211,7 +211,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 					});
 				}
 			} finally {
-				throw error;
+				throw extractError;
 			}
 		}
 
@@ -253,7 +253,19 @@ async function handleMentionMessage(message, env, isChat = false) {
 					{
 						chat_id: chatId,
 						message_id: thinkMessageId,
-						text: `Thoughts:\n\n<blockquote expandable>${thoughtTexts}</blockquote>`,
+						text: `Thoughts:\n\n<blockquote expandable>${(() => {
+							const strArr = Array.from(thoughtTexts);
+							if (strArr.length > 4096) {
+								return `${strArr
+									.slice(0, 2000)
+									.join('')
+									.trim()}\n\n......\n\n${strArr
+									.slice(strArr.length - 2000)
+									.join('')
+									.trim()}`.trim();
+							}
+							return thoughtTexts;
+						})()}</blockquote>`,
 					},
 					false
 				);
@@ -292,16 +304,14 @@ async function handleMentionMessage(message, env, isChat = false) {
 			if (thinkMessageId) {
 				await scheduleDeletion(env, chatId, thinkMessageId, 10 * 60 * 1_000);
 			}
-		} catch (error) {
+		} catch (apiError) {
 			try {
-				if (thinkMessageId) {
-					await bot.deleteMessage({
-						chat_id: chatId,
-						message_id: thinkMessageId,
-					});
-				}
+				await bot.deleteMessage({
+					chat_id: chatId,
+					message_id: thinkMessageId,
+				});
 			} finally {
-				throw error;
+				throw apiError;
 			}
 		}
 	} catch (error) {
