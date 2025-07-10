@@ -303,7 +303,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 				...askContents,
 				{
 					role: 'model',
-					parts: response
+					parts: response.parts
 						.filter((part) => !part.thought)
 						.map((part) => ({
 							text: part.text,
