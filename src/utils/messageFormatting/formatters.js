@@ -156,10 +156,13 @@ function formatToHTML(markdownText) {
 		return `<b>${escapedContent}</b>`;
 	});
 
-	// processedText = processedText.replace(/(?<!\*)\*(?!\*)(?!\s)(.*?)(?<!\s)\*(?!\*)/g, (match, content) => {
-	// 	const escapedContent = escapeHTML(content);
-	// 	return `<i>${escapedContent}</i>`;
-	// });
+	processedText = processedText.replace(
+		/(?<!\*)\*(?!\*)(?!\s)(.*?)(?<!\s)\*(?!\*)/g,
+		(match, content) => {
+			const escapedContent = escapeHTML(content);
+			return `<i>${escapedContent}</i>`;
+		}
+	);
 	// processedText = processedText.replace(/(?<!_)_(?!_)(?!\s)(.*?)(?<!\s)_(?!_)/g, (match, content) => {
 	// 	const escapedContent = escapeHTML(content);
 	// 	return `<i>${escapedContent}</i>`;

@@ -284,7 +284,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 			}
 
 			const fullText = resTexts
-				? `${resTexts}\n\n------\n\n⚠️ AI 的回答无法保证百分百准确，请自行判断！`
+				? `${resTexts}\n\n*⚠️ AI 的回答无法保证百分百准确，请自行判断！*`
 				: `Gemini API 未返回有效结果：未知原因，请稍后再试。`;
 
 			const { ok, error: sendError } = await sendFormattedMessage(
@@ -299,7 +299,17 @@ async function handleMentionMessage(message, env, isChat = false) {
 			}
 
 			// 更新聊天记录，保存 askContents 和回复
-			await updateChatContents(env, chatId, userId, [...askContents, response]);
+			await updateChatContents(env, chatId, userId, [
+				...askContents,
+				{
+					role: 'model',
+					parts: response
+						.filter((part) => !part.thought)
+						.map((part) => ({
+							text: part.text,
+						})),
+				},
+			]);
 
 			if (thinkMessageId) {
 				await scheduleDeletion(env, chatId, thinkMessageId, 30 * 60 * 1_000);
