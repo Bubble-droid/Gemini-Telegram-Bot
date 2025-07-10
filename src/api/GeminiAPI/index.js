@@ -115,7 +115,7 @@ class GeminiApi {
 							functionTexts
 								.map((part) => part.text)
 								.join('')
-								.trim() | '';
+								.trim() || '';
 
 						if (thoughtTexts) {
 							this.bot.editMessageText(
