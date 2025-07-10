@@ -302,7 +302,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 			await updateChatContents(env, chatId, userId, [...askContents, response]);
 
 			if (thinkMessageId) {
-				await scheduleDeletion(env, chatId, thinkMessageId, 10 * 60 * 1_000);
+				await scheduleDeletion(env, chatId, thinkMessageId, 30 * 60 * 1_000);
 			}
 		} catch (apiError) {
 			try {
