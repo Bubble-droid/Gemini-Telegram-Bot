@@ -68,11 +68,10 @@ async function messagesHandler(message, env) {
 			text: `❌ ${(() => {
 				if (regex.test(error.toString())) {
 					return '*存储在 Gemini APi 的历史文件可能已过期，请尝试使用命令 /clear@boxTrial_bot 清理上下文后再重新提问。*';
-				} else if (error.toString().includes('generateContent')) {
+				} else if (error.stack.toString().includes('generateContent')) {
 					return (
-						error.message ||
-						error +
-							'\n\n*请尝试使用命令 /clear@boxTrial_bot 清理上下文后再重新提问。*'
+						String(error.message || error) +
+						'\n\n*请尝试使用命令 /clear@boxTrial_bot 清理上下文后再重新提问。*'
 					);
 				}
 				return error.message || error;
