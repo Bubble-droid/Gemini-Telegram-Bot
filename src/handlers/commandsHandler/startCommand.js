@@ -25,11 +25,12 @@ async function handleStartCommand(message, env) {
 		if (chatId && replyToMessageId) {
 			const { message_id: startMessageId } = await bot.sendMessage({
 				chat_id: chatId,
-				text: `🤖 当前使用模型：\`${modelName}\`
+				text: [
+					`🤖 当前使用模型：\`${modelName}\``,
+					'✨ @ 我或者回复我的消息，也可以回复某条消息并 @ 我，\n    即可向我提问，可以是图片、视频、文件或者文本',
+					'👍 由 Cloudflare Workers 和 Gemini API 提供支持',
+				].join('\n\n'),
 
-					✨ @ 我或者回复我的消息，也可以回复某条消息并 @ 我，向我提问，可以是图片、视频、文件或者文本
-
-					👍 由 Cloudflare Workers 和 Gemini API 提供支持`,
 				reply_to_message_id: replyToMessageId,
 			});
 
