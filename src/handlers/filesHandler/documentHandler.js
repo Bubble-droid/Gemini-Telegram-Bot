@@ -32,7 +32,7 @@ async function handleDocument(document, env) {
 		// 检查文档的 MIME 类型是否在允许列表中
 		if (!document.mime_type || (!allowedMimeTypes.includes(document.mime_type) && !document.mime_type.startsWith('text/'))) {
 			console.error(`Unsupported document MIME type: ${document.mime_type}`);
-			let errorMessage = `❌ 不支持的文件类型 ${document.mime_type}，目前只支持处理以下文件类型:\n`;
+			let errorMessage = `不支持的文件类型 ${document.mime_type}，目前只支持处理以下文件类型:\n`;
 			allowedMimeTypes.forEach((mimeType) => {
 				errorMessage += `  - ${mimeType}\n`;
 			});
