@@ -32,7 +32,6 @@ function markdownToHtml(markdownText) {
 			BOLD_ASTERISK: /\*\*(.*?)\*\*/g,
 			BOLD_UNDERSCORE: /__(.*?)__/g, // 明确用于粗体
 			ITALIC_ASTERISK: /\*(.*?)\*/g, // 明确用于斜体
-			UNDERLINE: /__(.*?)__/g, // 明确用于下划线 (注意与粗体区分)
 			STRIKETHROUGH: /~(.*?)~/g,
 			SPOILER: /\|\|(.*?)\|\|/g,
 			BLOCKQUOTE: /(^> [^\n]+(\n> [^\n]+)*)(?:\n|$)/gm,
@@ -43,7 +42,9 @@ function markdownToHtml(markdownText) {
 		htmlText = htmlText.replace(REGEX.CODE_BLOCK, (_, lang, code) => {
 			const languageClass = lang ? `language-${lang}` : '';
 			// 代码块内部的内容需要进行 HTML 转义
-			return `<pre><code class="${languageClass}">${escapeHtml(code.trim())}</code></pre>`;
+			return `<pre><code class="${languageClass}">${escapeHtml(
+				code.trim()
+			)}</code></pre>`;
 		});
 
 		// 行内代码格式化 (`code` => <code>code</code>)
@@ -61,7 +62,7 @@ function markdownToHtml(markdownText) {
 		htmlText = htmlText.replace(REGEX.BOLD_UNDERSCORE, '<b>$1</b>');
 
 		// 斜体格式化 (*italic*  =>  <i>italic</i>) - 支持 *
-		// htmlText = htmlText.replace(REGEX.ITALIC_ASTERISK, '<i>$1</i>');
+		htmlText = htmlText.replace(REGEX.ITALIC_ASTERISK, '<i>$1</i>');
 
 		// 删除线格式化 (~strike~  =>  <s>strike</s>)
 		htmlText = htmlText.replace(REGEX.STRIKETHROUGH, '<s>$1</s>');
