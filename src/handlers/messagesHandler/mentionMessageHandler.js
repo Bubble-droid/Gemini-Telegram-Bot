@@ -256,13 +256,9 @@ async function handleMentionMessage(message, env, isChat = false) {
 						text: `Thoughts:\n\n<blockquote expandable>${(() => {
 							const strArr = Array.from(thoughtTexts);
 							if (strArr.length > 4096) {
-								return `${strArr
-									.slice(0, 2000)
-									.join('')
-									.trim()}\n\n......\n\n${strArr
+								return `${strArr.slice(0, 2000).join('')}\n\n......\n\n${strArr
 									.slice(strArr.length - 2000)
-									.join('')
-									.trim()}`.trim();
+									.join('')}`.trim();
 							}
 							return thoughtTexts;
 						})()}</blockquote>`,
@@ -281,11 +277,11 @@ async function handleMentionMessage(message, env, isChat = false) {
 			if (!resTexts && !thoughtTexts) {
 				console.log('Gemini API returned empty response.');
 				throw new Error('Gemini API returned an empty response.');
+			} else if (!resTexts) {
+				throw new Error('Gemini API 未返回有效回复：未知原因，请稍后再试。');
 			}
 
-			const fullText = resTexts
-				? `${resTexts}\n\n*⚠️ AI 的回答无法保证百分百准确，请自行判断！*`
-				: `Gemini API 未返回有效结果：未知原因，请稍后再试。`;
+			const fullText = `${resTexts}\n\n*⚠️ AI 的回答无法保证百分百准确，请自行判断！*`;
 
 			const { ok, error: sendError } = await sendFormattedMessage(
 				env,
@@ -298,31 +294,29 @@ async function handleMentionMessage(message, env, isChat = false) {
 				throw sendError || new Error('发送消息时发生未知错误');
 			}
 
-			// 更新聊天记录，保存 askContents 和回复
-			await updateChatContents(env, chatId, userId, [
-				...askContents,
-				{
-					role: 'model',
-					parts: response.parts
-						.filter((part) => !part.thought)
-						.map((part) => ({
-							text: part.text,
-						})),
-				},
-			]);
+			if (resTexts) {
+				// 更新聊天记录，保存 askContents 和回复
+				await updateChatContents(env, chatId, userId, [
+					...askContents,
+					{
+						role: 'model',
+						parts: response.parts
+							.filter((part) => !part.thought)
+							.map((part) => ({
+								text: part.text,
+							})),
+					},
+				]);
+			}
 
 			if (thinkMessageId) {
 				await scheduleDeletion(env, chatId, thinkMessageId, 30 * 60 * 1_000);
 			}
 		} catch (apiError) {
-			try {
-				await bot.deleteMessage({
-					chat_id: chatId,
-					message_id: thinkMessageId,
-				});
-			} finally {
-				throw apiError;
+			if (thinkMessageId) {
+				await scheduleDeletion(env, chatId, thinkMessageId, 30 * 60 * 1_000);
 			}
+			throw apiError;
 		}
 	} catch (error) {
 		console.error('Error handling mention message');

@@ -127,11 +127,9 @@ class GeminiApi {
 										if (strArr.length > 4096) {
 											return `${strArr
 												.slice(0, 2000)
-												.join('')
-												.trim()}\n\n......\n\n${strArr
+												.join('')}\n\n......\n\n${strArr
 												.slice(strArr.length - 2000)
-												.join('')
-												.trim()}`.trim();
+												.join('')}`.trim();
 										}
 										return thoughtTexts;
 									})()}</blockquote>`,
