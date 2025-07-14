@@ -16,7 +16,7 @@ const getConfig = (env) => {
 		'TELEGRAM_BOT_CONFIG',
 		'GROUP_CHAT_CONTENTS',
 		'API_RATE_LIMIT',
-		'GITHUB_TOKEN', // 添加 GitHub Token
+		'GITHUB_TOKEN',
 	];
 	for (const varName of requiredVars) {
 		if (!env[varName]) {
@@ -26,7 +26,7 @@ const getConfig = (env) => {
 
 	return {
 		apiKey: env.GEMINI_API_KEY,
-		modelName: env.GEMINI_MODEL_NAME || 'gemini-2.5-flash-preview-05-20',
+		modelName: env.GEMINI_MODEL_NAME || 'gemini-2.5-flash',
 		adminId: Number(env.TELEGRAM_BOT_ADMIN_ID),
 		botId: Number(env.TELEGRAM_BOT_ID),
 		botName: env.TELEGRAM_BOT_USERNAME,
@@ -40,7 +40,7 @@ const getConfig = (env) => {
 		apiRateLimit: env.API_RATE_LIMIT,
 		maxContentsLength: Number(env.MAX_CONTENTS_LENGTH) || 10,
 		apiRequestInterval: Number(env.API_REQUEST_INTERVAL) || 1.0,
-		githubToken: env.GITHUB_TOKEN, // 添加 GitHub Token
+		githubToken: env.GITHUB_TOKEN,
 	};
 };
 

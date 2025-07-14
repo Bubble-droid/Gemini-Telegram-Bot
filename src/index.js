@@ -35,19 +35,7 @@ export default {
 		}
 
 		return new Response('Not Found', { status: 404 });
-	},
-
-	/**
-	 * 处理定时任务事件
-	 * @param {object} event - 定时任务事件对象
-	 * @param {object} env - Cloudflare Worker 的环境变量对象
-	 * @param {object} ctx - Worker 的执行上下文
-	 */
-	async scheduled(event, env, ctx) {
-		console.log('Received scheduled event:', event.scheduledTime);
-		// 将定时任务事件交给 scheduler 模块处理（如果需要）
-		// await handleScheduledEvent(event, env, ctx);
-	},
+	}
 };
 
 // TimerDO 类保持不变，用于处理 Durable Object 的定时任务

@@ -55,6 +55,10 @@ async function commandsHandler(message, env) {
 		}
 	} catch (error) {
 		console.error('Error handling command:', error);
+		await bot.deleteMessage({
+			chat_id: message.chat.id,
+			message_id: message.message_id,
+		});
 		throw error;
 	}
 
