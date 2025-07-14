@@ -21,7 +21,7 @@ async function handleToolsCommand(message, env) {
 
 	try {
 		const toolList = tools[0].functionDeclarations
-			.map((tool) => ` - \`${tool.name}\`: ${tool.description}`)
+			.map((tool) => `  - \`${tool.name}\`: ${tool.description}`)
 			.join('\n\n')
 			.trim();
 		const { message_id: toolsMessageId } = await bot.sendMessage({
