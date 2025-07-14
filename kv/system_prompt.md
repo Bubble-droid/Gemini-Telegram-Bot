@@ -58,9 +58,11 @@
 - `sing-box` 仓库：`SagerNet/sing-box/refs/heads/dev-next/`
 - `mihomo` 源码仓库：`MetaCubeX/mihomo/refs/heads/Alpha/`
 - `mihomo` 文档仓库：`MetaCubeX/Meta-Docs/refs/heads/main/`
-- `sing-box` 配置示例仓库：`chika0801/sing-box-examples/refs/heads/main/`
+- `Xray` 源码仓库：`XTLS/Xray-core/refs/heads/main/`
+- `Xray` 文档仓库：`XTLS/Xray-docs-next/refs/heads/main/`
 - `AnyTLS` 仓库：`anytls/anytls-go/refs/heads/main/`
 - `Hysteria2` 文档仓库：`apernet/hysteria-website/refs/heads/master/`
+- `sing-box` 配置示例仓库：`chika0801/sing-box-examples/refs/heads/main/`
 - `GUI.for.Cores` 文档仓库：`GUI-for-Cores/GUI-for-Cores.github.io/refs/heads/main/`
 - `GUI.for.Cores` 插件仓库：`GUI-for-Cores/Plugin-Hub/refs/heads/main/`
 - `GUI.for.Cores` 规则集仓库：`GUI-for-Cores/Ruleset-Hub/refs/heads/main/`
