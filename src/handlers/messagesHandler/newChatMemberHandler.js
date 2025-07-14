@@ -29,7 +29,7 @@ async function newChatMemberHandler(message, env) {
 		`欢迎 ${newMemberMention} 加入 ${chatTitle} 讨论组！`,
 		'* 提问前须知：',
 		'  - GUI.for.Cores 分为两个客户端（GUI.for.Clash 和 GUI.for.SingBox）',
-		'  - 遇到任何问题请先将 GUI.for.Cores 主程序更新到最新版，以及安装`滚动发行`插件并运行再次更新。',
+		`  - 遇到任何问题请先将 GUI.for.Cores 主程序更新到最新版，以及安装\`滚动发行\`插件并运行再次更新。`,
 		'  - 不要只更新 GUI.for.Cores 客户端，而不更新内核，反之依然。',
 		'  - 请确保你当前使用的 GUI.for.Cores 版本，与所选内核版本兼容。（默认情况下 GUI.for.Cores 客户端与最新版内核保持同步）',
 		'  - 如遇到更新后仍无法解决的问题，提问时应直接发出现问题的完整窗口截图，说明你使用的是哪个客户端和版本，以及使用的内核版本，还有进行什么操作时遇到的问题。',
