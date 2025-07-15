@@ -25,7 +25,7 @@ async function getChatContents(env, chatId, userId) {
 		if (compressContents.length > 0) {
 			const formatCompressContents = compressContents.map((c) => ({
 				role: 'user',
-				parts: JSON.stringify(c),
+				parts: [{ text: JSON.stringify(c) }],
 			}));
 			contents = formatCompressContents.concat(contents);
 		}
