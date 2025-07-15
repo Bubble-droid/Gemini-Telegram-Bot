@@ -16,9 +16,11 @@ async function clearChatContents(env, chatId, userId) {
 	const config = getConfig(env);
 	const kvNamespace = config.chatContentsKv;
 	const key = `contents_${chatId}_${userId}`;
+	const keyCompress = `contents_${chatId}_${userId}_compress`;
 
 	try {
 		await kvDelete(kvNamespace, key);
+		await kvDelete(kvNamespace, keyCompress);
 		console.log(`${key}: 对话内容清理成功`);
 	} catch (error) {
 		// 记录详细错误信息并重新抛出

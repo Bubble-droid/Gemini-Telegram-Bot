@@ -16,18 +16,23 @@ async function getChatContents(env, chatId, userId) {
 	const kvNamespace = config.chatContentsKv;
 	// 确保键格式与 updateChatHistory.js 一致
 	const key = `contents_${chatId}_${userId}`;
+	const keyCompress = `contents_${chatId}_${userId}_compress`;
 	try {
 		// kvRead 已经处理了键不存在的情况，返回 null
-		let contents = await kvRead(kvNamespace, key);
+		let contents = JSON.parse(await kvRead(kvNamespace, key)) || [];
+		let compressContents =
+			JSON.parse(await kvRead(kvNamespace, keyCompress)) || [];
+		if (compressContents.length > 0) {
+			const formatCompressContents = compressContents.map((c) => ({
+				role: 'user',
+				parts: JSON.stringify(c),
+			}));
+			contents = formatCompressContents.concat(contents);
+		}
 
 		// console.log(`Getting chat contents: ${JSON.stringify(contents)}`);
-
-		if (!contents) {
-			contents = [];
-			return contents;
-		}
 		// console.log(`Chat ID ${chatId}: 获取聊天历史成功。`);
-		return JSON.parse(contents);
+		return contents;
 	} catch (error) {
 		console.error(`Error reading chat contents for ${key}:`, error);
 		throw error;
