@@ -35,6 +35,8 @@
 	- **参数**: `owner`, `repo`, `per_page` (整数, 默认 10, 最大 100), `page` (整数, 默认 1)。
 - **listUserOrOrgRepos**: 列出指定用户或组织下的所有仓库。
 	- **参数**: `userOrOrg` (字符串): GitHub 用户名或组织名称；`type` (字符串, 选填): 仓库类型 (默认 `all`)；`sort` (字符串, 选填): 排序方式 (默认 `updated`)；`direction` (字符串, 选填): 排序方向 (默认 `desc`)。
+- **listRepoBranches**: 列出指定 GitHub 仓库的所有分支。
+	- **参数**: `owner`, `repo`。
 - **getOnlineFile**: 解析在线文件（例如图片、视频、文档等）链接，并识别文件内容
 	- **参数**: `fileUrl` (字符串), `fileName` (字符串), `mimeType` (字符串)。
 - **getYoutubeVideoLink**: 解析 YouTube 视频链接，并识别视频内容。

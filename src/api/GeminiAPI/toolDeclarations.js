@@ -975,6 +975,65 @@ const tools = [
 					},
 				},
 			},
+			{
+				name: 'listRepoBranches',
+				description: '列出指定 GitHub 仓库的所有分支。',
+				behavior: 'BLOCKING',
+				parameters: {
+					type: Type.OBJECT,
+					title: 'List GitHub Repository Branches Parameters',
+					properties: {
+						owner: {
+							type: Type.STRING,
+							description: 'GitHub 仓库所有者，例如 "SagerNet"。',
+							example: 'SagerNet',
+						},
+						repo: {
+							type: Type.STRING,
+							description: 'GitHub 仓库名称，例如 "sing-box"。',
+							example: 'sing-box',
+						},
+					},
+					required: ['owner', 'repo'],
+				},
+				response: {
+					type: Type.OBJECT,
+					title: 'List GitHub Repository Branches Response',
+					properties: {
+						branches: {
+							type: Type.ARRAY,
+							description: '获取到的分支列表。',
+							items: {
+								type: Type.OBJECT,
+								title: 'Branch Item',
+								properties: {
+									name: {
+										type: Type.STRING,
+										description: '分支名称。',
+									},
+									commit_sha: {
+										type: Type.STRING,
+										description: '最新提交的 SHA 值。',
+									},
+									commit_url: {
+										type: Type.STRING,
+										description: '最新提交的 API URL。',
+									},
+									protected: {
+										type: Type.BOOLEAN,
+										description: '分支是否受保护。',
+									},
+								},
+								required: ['name', 'commit_sha', 'commit_url', 'protected'],
+							},
+						},
+						error: {
+							type: Type.STRING,
+							description: '如果发生错误，则包含错误信息。',
+						},
+					},
+				},
+			},
 		],
 	},
 ];

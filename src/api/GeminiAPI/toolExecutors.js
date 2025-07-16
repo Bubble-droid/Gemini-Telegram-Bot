@@ -74,8 +74,9 @@ const toolExecutors = {
 						);
 						assetsContent.push({
 							path: asset,
-							content: `错误：获取文件时发生网络错误 - ${fetchError.message || '未知错误'
-								}`,
+							content: `错误：获取文件时发生网络错误 - ${
+								fetchError.message || '未知错误'
+							}`,
 							identifier: assetIdentifier,
 						});
 					}
@@ -129,8 +130,9 @@ const toolExecutors = {
 		// q=Keywords+in:file+repo:Owner/Repo+path:PATH/TO&ref:Branch
 		const apiUrl = `https://api.github.com/search/code?q=${encodeURIComponent(
 			keyword
-		)}+in:file+repo:${encodeURIComponent(`${owner}/${repo}`)}${path ? `+path:${path}` : ''
-			}${branch ? `&ref=${encodeURIComponent(branch)}` : ''}`;
+		)}+in:file+repo:${encodeURIComponent(`${owner}/${repo}`)}${
+			path ? `+path:${path}` : ''
+		}${branch ? `&ref=${encodeURIComponent(branch)}` : ''}`;
 
 		try {
 			console.log(`尝试通过 GitHub API 搜索文件: ${apiUrl}`);
@@ -173,8 +175,9 @@ const toolExecutors = {
 				`GitHub API 搜索文件时发生网络错误: ${fetchError}, URL: ${apiUrl}`
 			);
 			return {
-				error: `GitHub API 搜索文件时发生网络错误 - ${fetchError.message || '未知错误'
-					}`,
+				error: `GitHub API 搜索文件时发生网络错误 - ${
+					fetchError.message || '未知错误'
+				}`,
 			};
 		}
 	},
@@ -286,8 +289,9 @@ const toolExecutors = {
 			// 1. 获取分支的最新 commit SHA
 			const branchApiUrl = `https://api.github.com/repos/${encodeURIComponent(
 				owner
-			)}/${encodeURIComponent(repo)}/branches/${branch ? `${encodeURIComponent(branch)}` : ''
-				}`;
+			)}/${encodeURIComponent(repo)}/branches/${
+				branch ? `${encodeURIComponent(branch)}` : ''
+			}`;
 			console.log(`尝试获取分支信息: ${branchApiUrl}`);
 			const branchResponse = await fetch(branchApiUrl, {
 				method: 'GET',
@@ -357,12 +361,14 @@ const toolExecutors = {
 			return { fileList };
 		} catch (fetchError) {
 			console.error(
-				`GitHub API 列出仓库文件树时发生网络错误: ${fetchError}, URL: ${fetchError.url || '未知'
+				`GitHub API 列出仓库文件树时发生网络错误: ${fetchError}, URL: ${
+					fetchError.url || '未知'
 				}`
 			);
 			return {
-				error: `GitHub API 列出仓库文件树时发生网络错误 - ${fetchError.message || '未知错误'
-					}`,
+				error: `GitHub API 列出仓库文件树时发生网络错误 - ${
+					fetchError.message || '未知错误'
+				}`,
 			};
 		}
 	},
@@ -485,8 +491,9 @@ const toolExecutors = {
 		// 构建 GitHub API 提交记录 URL
 		let apiUrl = `https://api.github.com/repos/${encodeURIComponent(
 			owner
-		)}/${encodeURIComponent(repo)}/commits?${branch ? `sha=${encodeURIComponent(branch)}&` : ''
-			}${path ? `path=${path}&` : ''}per_page=${per_page}&page=${page}`;
+		)}/${encodeURIComponent(repo)}/commits?${
+			branch ? `sha=${encodeURIComponent(branch)}&` : ''
+		}${path ? `path=${path}&` : ''}per_page=${per_page}&page=${page}`;
 
 		try {
 			console.log(`尝试通过 GitHub API 获取提交记录: ${apiUrl}`);
@@ -529,12 +536,14 @@ const toolExecutors = {
 			return { commits };
 		} catch (fetchError) {
 			console.error(
-				`GitHub API 获取提交记录时发生网络错误: ${fetchError}, URL: ${fetchError.url || '未知'
+				`GitHub API 获取提交记录时发生网络错误: ${fetchError}, URL: ${
+					fetchError.url || '未知'
 				}`
 			);
 			return {
-				error: `GitHub API 获取提交记录时发生网络错误 - ${fetchError.message || '未知错误'
-					}`,
+				error: `GitHub API 获取提交记录时发生网络错误 - ${
+					fetchError.message || '未知错误'
+				}`,
 			};
 		}
 	},
@@ -835,12 +844,13 @@ const toolExecutors = {
 		}
 
 		// 构建 GitHub API URL，根据 userOrOrg 是用户还是组织来确定前缀
-		const apiUrl = `https://api.github.com/${userOrOrg.includes('/')
+		const apiUrl = `https://api.github.com/${
+			userOrOrg.includes('/')
 				? `repos/${encodeURIComponent(userOrOrg)}`
 				: `users/${encodeURIComponent(userOrOrg)}`
-			}/repos?type=${encodeURIComponent(type)}&sort=${encodeURIComponent(
-				sort
-			)}&direction=${encodeURIComponent(direction)}`;
+		}/repos?type=${encodeURIComponent(type)}&sort=${encodeURIComponent(
+			sort
+		)}&direction=${encodeURIComponent(direction)}`;
 
 		try {
 			console.log(`尝试通过 GitHub API 获取仓库列表: ${apiUrl}`);
@@ -892,12 +902,93 @@ const toolExecutors = {
 			return { repos };
 		} catch (fetchError) {
 			console.error(
-				`GitHub API 获取仓库列表时发生网络错误: ${fetchError}, URL: ${fetchError.url || '未知'
+				`GitHub API 获取仓库列表时发生网络错误: ${fetchError}, URL: ${
+					fetchError.url || '未知'
 				}`
 			);
 			return {
-				error: `GitHub API 获取仓库列表时发生网络错误 - ${fetchError.message || '未知错误'
-					}`,
+				error: `GitHub API 获取仓库列表时发生网络错误 - ${
+					fetchError.message || '未知错误'
+				}`,
+			};
+		}
+	},
+	/**
+	 * 执行 listRepoBranches 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box' }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 branches 字段，branches 是分支列表
+	 */
+	listRepoBranches: async (args) => {
+		console.log('执行工具: listRepoBranches, 参数:', args);
+		const { owner, repo } = args;
+		const githubToken = toolExecutors.githubToken;
+
+		if (!owner || !repo) {
+			console.warn(
+				'listRepoBranches 工具调用参数无效: 缺少仓库所有者或仓库名称。'
+			);
+			return {
+				error: 'listRepoBranches 工具调用参数无效，缺少仓库所有者或仓库名称。',
+			};
+		}
+
+		if (!githubToken) {
+			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
+			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
+		}
+
+		const apiUrl = `https://api.github.com/repos/${encodeURIComponent(
+			owner
+		)}/${encodeURIComponent(repo)}/branches`;
+
+		try {
+			console.log(`尝试通过 GitHub API 获取分支列表: ${apiUrl}`);
+			const response = await fetch(apiUrl, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/vnd.github+json',
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot',
+				},
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.warn(
+					`GitHub API 获取分支列表失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`
+				);
+				return {
+					error: `GitHub API 获取分支列表失败 (状态码: ${response.status}) - ${errorText}`,
+				};
+			}
+
+			const data = await response.json();
+			const branches = [];
+
+			if (Array.isArray(data)) {
+				for (const item of data) {
+					branches.push({
+						name: item.name,
+						commit_sha: item.commit.sha,
+						commit_url: item.commit.url,
+						protected: item.protected,
+					});
+				}
+			}
+			console.log(
+				`listRepoBranches 工具执行完毕，找到 ${branches.length} 个分支。`
+			);
+			return { branches };
+		} catch (fetchError) {
+			console.error(
+				`GitHub API 获取分支列表时发生网络错误: ${fetchError}, URL: ${
+					fetchError.url || '未知'
+				}`
+			);
+			return {
+				error: `GitHub API 获取分支列表时发生网络错误 - ${
+					fetchError.message || '未知错误'
+				}`,
 			};
 		}
 	},
