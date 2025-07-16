@@ -700,6 +700,18 @@ const tools = [
 										type: Type.STRING,
 										description: '发布版本的名称。',
 									},
+									body: {
+										type: Type.STRING,
+										description: '发布版本的描述。',
+									},
+									author_login: {
+										type: Type.STRING,
+										description: '发布版本的作者登录名称。',
+									},
+									author_type: {
+										type: Type.STRING,
+										description: '发布版本的作者类型。',
+									},
 									published_at: {
 										type: Type.STRING,
 										format: 'date-time',
@@ -721,6 +733,9 @@ const tools = [
 								required: [
 									'tag_name',
 									'name',
+									'body',
+									'author_login',
+									'author_type',
 									'published_at',
 									'html_url',
 									'prerelease',

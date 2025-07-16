@@ -597,6 +597,9 @@ const toolExecutors = {
 					releases.push({
 						tag_name: item.tag_name,
 						name: item.name,
+						body: item.body,
+						author_login: item.author.login,
+						author_type: item.author.type,
 						published_at: item.published_at,
 						html_url: item.html_url,
 						prerelease: item.prerelease,
