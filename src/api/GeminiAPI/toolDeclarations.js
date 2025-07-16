@@ -647,8 +647,7 @@ const tools = [
 			},
 			{
 				name: 'getRepoReleases',
-				description:
-					'获取指定 GitHub 仓库的最新稳定发布版本（Latest Release）和最新预发布版本（Latest Pre-release）信息。',
+				description: '获取指定 GitHub 仓库的最近指定数量的发布版本。',
 				behavior: 'BLOCKING',
 				parameters: {
 					type: Type.OBJECT,
@@ -664,6 +663,21 @@ const tools = [
 							description: 'GitHub 仓库名称，例如 "sing-box"。',
 							example: 'sing-box',
 						},
+						per_page: {
+							type: Type.NUMBER,
+							description: '每页返回的发布版本数量，默认为 10，最大 100。',
+							default: 10,
+							minimum: 1,
+							maximum: 100,
+							example: 10,
+						},
+						page: {
+							type: Type.NUMBER,
+							description: '页码，默认为 1。',
+							default: 1,
+							minimum: 1,
+							example: 1,
+						},
 					},
 					required: ['owner', 'repo'],
 				},
@@ -671,55 +685,48 @@ const tools = [
 					type: Type.OBJECT,
 					title: 'Get GitHub Repository Releases Response',
 					properties: {
-						latestRelease: {
-							type: Type.OBJECT,
-							nullable: true,
-							description: '最新的稳定发布版本信息。如果不存在，则为 null。',
-							properties: {
-								tag_name: {
-									type: Type.STRING,
-									description: '发布版本的标签名称。',
+						releases: {
+							type: Type.ARRAY,
+							description: '发布版本列表。',
+							items: {
+								type: Type.OBJECT,
+								title: 'Release Item',
+								properties: {
+									tag_name: {
+										type: Type.STRING,
+										description: '发布版本的标签名称。',
+									},
+									name: {
+										type: Type.STRING,
+										description: '发布版本的名称。',
+									},
+									published_at: {
+										type: Type.STRING,
+										format: 'date-time',
+										description: '发布时间。',
+									},
+									html_url: {
+										type: Type.STRING,
+										description: '发布版本的 HTML URL。',
+									},
+									prerelease: {
+										type: Type.BOOLEAN,
+										description: '是否为预发布版本。',
+									},
+									draft: {
+										type: Type.BOOLEAN,
+										description: '是否为草稿版本。',
+									},
 								},
-								name: {
-									type: Type.STRING,
-									description: '发布版本的名称。',
-								},
-								published_at: {
-									type: Type.STRING,
-									format: 'date-time',
-									description: '发布时间。',
-								},
-								html_url: {
-									type: Type.STRING,
-									description: '发布版本的 HTML URL。',
-								},
+								required: [
+									'tag_name',
+									'name',
+									'published_at',
+									'html_url',
+									'prerelease',
+									'draft',
+								],
 							},
-							required: ['tag_name', 'name', 'published_at', 'html_url'],
-						},
-						latestPreRelease: {
-							type: Type.OBJECT,
-							nullable: true,
-							description: '最新的预发布版本信息。如果不存在，则为 null。',
-							properties: {
-								tag_name: {
-									type: Type.STRING,
-									description: '预发布版本的标签名称。',
-								},
-								name: {
-									type: Type.STRING,
-									description: '预发布版本的名称。',
-								},
-								published_at: {
-									type: Type.STRING,
-									format: 'date-time',
-									description: '预发布时间。',
-								},
-								html_url: {
-									type: Type.STRING,
-									description: '预发布版本的 HTML URL。',
-								},
-							},
-							required: ['tag_name', 'name', 'published_at', 'html_url'],
 						},
 						error: {
 							type: Type.STRING,
@@ -815,6 +822,136 @@ const tools = [
 								},
 							},
 							required: ['fileUri', 'mimeType'],
+						},
+						error: {
+							type: Type.STRING,
+							description: '如果发生错误，则包含错误信息。',
+						},
+					},
+				},
+			},
+			{
+				name: 'listUserOrOrgRepos',
+				description: '列出指定用户或组织下的所有仓库。',
+				behavior: 'BLOCKING',
+				parameters: {
+					type: Type.OBJECT,
+					title: 'List User or Organization Repositories Parameters',
+					properties: {
+						userOrOrg: {
+							type: Type.STRING,
+							description: 'GitHub 用户名或组织名称，例如 "SagerNet"。',
+							example: 'SagerNet',
+						},
+						type: {
+							type: Type.STRING,
+							description: '仓库类型，例如 "all"。',
+							default: 'all',
+							example: 'all',
+						},
+						sort: {
+							type: Type.STRING,
+							description:
+								'排序方式，例如 "created", "updated", "pushed", "full_name" 等，默认为 "updated"。',
+							default: 'updated',
+							enum: ['created', 'updated', 'pushed', 'full_name'],
+							example: 'updated',
+						},
+						direction: {
+							type: Type.STRING,
+							description: '排序方向，"asc" 或 "desc"，默认为 "desc"。',
+							default: 'desc',
+							enum: ['asc', 'desc'],
+							example: 'desc',
+						},
+					},
+					required: ['userOrOrg'],
+				},
+				response: {
+					type: Type.OBJECT,
+					title: 'List User or Organization Repositories Response',
+					properties: {
+						repos: {
+							type: Type.ARRAY,
+							description: '获取到的仓库列表。',
+							items: {
+								type: Type.OBJECT,
+								title: 'Repository Item',
+								properties: {
+									id: {
+										type: Type.NUMBER,
+										description: '仓库 ID。',
+									},
+									name: {
+										type: Type.STRING,
+										description: '仓库名称。',
+									},
+									full_name: {
+										type: Type.STRING,
+										description: '仓库完整名称（owner/repo）。',
+									},
+									private: {
+										type: Type.BOOLEAN,
+										description: '是否为私有仓库。',
+									},
+									owner_login: {
+										type: Type.STRING,
+										description: '所有者登录名。',
+									},
+									html_url: {
+										type: Type.STRING,
+										description: '仓库的 HTML URL。',
+									},
+									description: {
+										type: Type.STRING,
+										description: '仓库描述。',
+										nullable: true,
+									},
+									fork: {
+										type: Type.BOOLEAN,
+										description: '是否为 Fork 仓库。',
+									},
+									stargazers_count: {
+										type: Type.NUMBER,
+										description: '星标数量。',
+									},
+									watchers_count: {
+										type: Type.NUMBER,
+										description: '关注者数量。',
+									},
+									language: {
+										type: Type.STRING,
+										description: '主要编程语言。',
+										nullable: true,
+									},
+									forks_count: {
+										type: Type.NUMBER,
+										description: 'Fork 数量。',
+									},
+									open_issues_count: {
+										type: Type.NUMBER,
+										description: '开放 Issue 数量。',
+									},
+									default_branch: {
+										type: Type.STRING,
+										description: '默认分支名称。',
+									},
+								},
+								required: [
+									'id',
+									'name',
+									'full_name',
+									'private',
+									'owner_login',
+									'html_url',
+									'fork',
+									'stargazers_count',
+									'watchers_count',
+									'forks_count',
+									'open_issues_count',
+									'default_branch',
+								],
+							},
 						},
 						error: {
 							type: Type.STRING,

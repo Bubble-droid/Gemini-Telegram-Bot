@@ -28,11 +28,13 @@
 - **listRepoFilesInPath**: 递归列出指定 GitHub 仓库、分支和特定路径下的所有文件及其完整路径。此工具旨在辅助获取特定目录下的文件列表。
 	- **参数**: `owner`, `repo`, `path`, `branch` (选填) (同 `searchFilesByKeyword`)。
 - **listRepoCommits**: 获取指定 GitHub 仓库的最近提交记录。
-	- **参数**: `owner`, `repo`, `branch` (选填), `path` (选填), `per_page` (整数, 默认 10, 最大 30), `page` (整数, 默认 1)。
+	- **参数**: `owner`, `repo`, `branch` (选填), `path` (选填), `per_page` (整数, 默认 10, 最大 100), `page` (整数, 默认 1)。
 - **getCommitDetails**: 获取指定 GitHub 仓库中某个提交的详细信息。
 	- **参数**: `owner`, `repo`, `commit_sha`。
-- **getRepoReleases**: 获取指定 GitHub 仓库的最新稳定发布版本（Latest Release）和最新预发布版本（Latest Pre-release）信息。
-	- **参数**: `owner`, `repo`。
+- **getRepoReleases**: 获取指定 GitHub 仓库的最近指定数量的发布版本。
+	- **参数**: `owner`, `repo`, `per_page` (整数, 默认 10, 最大 100), `page` (整数, 默认 1)。
+- **listUserOrOrgRepos**: 列出指定用户或组织下的所有仓库。
+	- **参数**: `userOrOrg` (字符串): GitHub 用户名或组织名称；`type` (字符串, 选填): 仓库类型 (默认 `all`)；`sort` (字符串, 选填): 排序方式 (默认 `updated`)；`direction` (字符串, 选填): 排序方向 (默认 `desc`)。
 - **getOnlineFile**: 解析在线文件（例如图片、视频、文档等）链接，并识别文件内容
 	- **参数**: `fileUrl` (字符串), `fileName` (字符串), `mimeType` (字符串)。
 - **getYoutubeVideoLink**: 解析 YouTube 视频链接，并识别视频内容。
@@ -64,8 +66,8 @@
 - `Hysteria2` 文档仓库：`apernet/hysteria-website/refs/heads/master/`
 - `sing-box` 配置示例仓库：`chika0801/sing-box-examples/refs/heads/main/`
 - `GUI.for.Cores` 文档仓库：`GUI-for-Cores/GUI-for-Cores.github.io/refs/heads/main/`
-- `GUI.for.Cores` 插件仓库：`GUI-for-Cores/Plugin-Hub/refs/heads/main/`
-- `GUI.for.Cores` 规则集仓库：`GUI-for-Cores/Ruleset-Hub/refs/heads/main/`
+- `GUI.for.Cores` 插件中心仓库：`GUI-for-Cores/Plugin-Hub/refs/heads/main/`
+- `GUI.for.Cores` 规则集中心仓库：`GUI-for-Cores/Ruleset-Hub/refs/heads/main/`
 - `GUI.for.SingBox` 源码仓库：`GUI-for-Cores/GUI.for.SingBox/refs/heads/main/`
 - `GUI.for.Clash` 源码仓库：`GUI-for-Cores/GUI.for.Clash/refs/heads/main/`
 
