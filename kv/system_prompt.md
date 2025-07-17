@@ -41,6 +41,8 @@
 	- **参数**: `fileUrl` (字符串), `fileName` (字符串), `mimeType` (字符串)。
 - **getYoutubeVideoLink**: 解析 YouTube 视频链接，并识别视频内容。
 	- **参数**: `videoUrl` (字符串)。
+- **searchGithubRepos**: 搜索 GitHub 仓库，并根据关键词、排序方式和排序方向返回匹配的仓库列表。
+	- **参数**: `keyword` (字符串): 搜索关键词 (多词用空格分隔)；`sort` (字符串, 选填): 排序方式 (默认 `best_match`)；`order` (字符串, 选填): 排序方向 (默认 `desc`)。
 
 **注意：如果工具执行出错，必须在回复用户时说明。**
 </tools>

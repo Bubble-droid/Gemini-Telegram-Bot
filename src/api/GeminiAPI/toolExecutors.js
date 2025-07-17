@@ -992,6 +992,98 @@ const toolExecutors = {
 			};
 		}
 	},
+
+	/**
+	 * 执行 searchGithubRepos工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { keyword: 'free node', sort: 'updated', order: 'desc' }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 repositories 字段，repositories 是仓库列表
+	 */
+	searchGithubRepos: async (args) => {
+		console.log('执行工具: searchGithubRepos, 参数:', args);
+		const { keyword, sort = 'best match', order = 'desc' } = args;
+		const githubToken = toolExecutors.githubToken;
+
+		if (!keyword) {
+			console.warn('searchGithubRepos 工具调用参数无效: 缺少 keyword。');
+			return {
+				error: 'searchGithubRepos 工具调用参数无效，缺少关键词。',
+			};
+		}
+
+		if (!githubToken) {
+			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
+			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
+		}
+
+		// 构建 GitHub API 搜索仓库 URL
+		const apiUrl = `https://api.github.com/search/repositories?q=${encodeURIComponent(
+			keyword
+		)}${
+			sort !== 'best match' ? `&sort=${encodeURIComponent(sort)}` : ''
+		}&order=${encodeURIComponent(order)}`;
+
+		try {
+			console.log(`尝试通过 GitHub API 搜索仓库: ${apiUrl}`);
+			const response = await fetch(apiUrl, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/vnd.github+json',
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot',
+				},
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.warn(
+					`GitHub API 搜索仓库失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`
+				);
+				return {
+					error: `GitHub API 搜索仓库失败 (状态码: ${response.status}) - ${errorText}`,
+				};
+			}
+
+			const data = await response.json();
+			const repositories = [];
+
+			if (data.items && Array.isArray(data.items)) {
+				for (const item of data.items) {
+					repositories.push({
+						id: item.id,
+						name: item.name,
+						full_name: item.full_name,
+						private: item.private,
+						owner_login: item.owner.login,
+						html_url: item.html_url,
+						description: item.description,
+						fork: item.fork,
+						stargazers_count: item.stargazers_count,
+						watchers_count: item.watchers_count,
+						language: item.language,
+						forks_count: item.forks_count,
+						open_issues_count: item.open_issues_count,
+						default_branch: item.default_branch,
+						updated_at: item.updated_at,
+					});
+				}
+			}
+			console.log(
+				`searchGithubRepos 工具执行完毕，找到 ${repositories.length} 个仓库。`
+			);
+			return { repositories };
+		} catch (fetchError) {
+			console.error(
+				`GitHub API 搜索仓库时发生网络错误: ${fetchError}, URL: ${
+					fetchError.url || '未知'
+				}`
+			);
+			return {
+				error: `GitHub API 搜索仓库时发生网络错误 - ${
+					fetchError.message || '未知错误'
+				}`,
+			};
+		}
+	},
 };
 
 export default toolExecutors;

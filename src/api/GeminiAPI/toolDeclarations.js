@@ -812,7 +812,7 @@ const tools = [
 						mimeType: {
 							type: Type.STRING,
 							description:
-								'文件的MIME类型，图片类文件同一为 "image/jpeg"，视频和动态图片类文件统一为 "video/mp4"，可直接读取内容的文本类文件统一为 "text/plain"',
+								'文件的MIME类型，图片类文件统一为 "image/jpeg"，视频和动态图片类文件统一为 "video/mp4"，可直接读取内容的文本类文件统一为 "text/plain"',
 							example: 'image/jpeg',
 							enum: ['image/jpeg', 'video/mp4', 'text/plain'],
 						},
@@ -1025,6 +1025,144 @@ const tools = [
 									},
 								},
 								required: ['name', 'commit_sha', 'commit_url', 'protected'],
+							},
+						},
+						error: {
+							type: Type.STRING,
+							description: '如果发生错误，则包含错误信息。',
+						},
+					},
+				},
+			},
+			{
+				name: 'searchGithubRepos',
+				description:
+					'搜索 GitHub 仓库，并根据关键词、排序方式和排序方向返回匹配的仓库列表。',
+				behavior: 'BLOCKING',
+				parameters: {
+					type: Type.OBJECT,
+					title: 'Search GitHub Repositories Parameters',
+					properties: {
+						keyword: {
+							type: Type.STRING,
+							description:
+								'用于搜索仓库的关键词，多个关键词请用空格分隔，例如 "free node"。',
+							example: 'free node',
+						},
+						sort: {
+							type: Type.STRING,
+							description:
+								'排序方式，例如 "stars", "forks", "help-wanted-issues", "updated" 等，默认为 "best match"。',
+							default: 'best match',
+							enum: [
+								'stars',
+								'forks',
+								'help-wanted-issues',
+								'updated',
+								'best match',
+							],
+							example: 'updated',
+						},
+						order: {
+							type: Type.STRING,
+							description: '排序方向，"asc" 或 "desc"，默认为 "desc"。',
+							default: 'desc',
+							enum: ['asc', 'desc'],
+							example: 'desc',
+						},
+					},
+					required: ['keyword'],
+				},
+				response: {
+					type: Type.OBJECT,
+					title: 'Search GitHub Repositories Response',
+					properties: {
+						repositories: {
+							type: Type.ARRAY,
+							description: '获取到的仓库列表。',
+							items: {
+								type: Type.OBJECT,
+								title: 'Repository Item',
+								properties: {
+									id: {
+										type: Type.NUMBER,
+										description: '仓库 ID。',
+									},
+									name: {
+										type: Type.STRING,
+										description: '仓库名称。',
+									},
+									full_name: {
+										type: Type.STRING,
+										description: '仓库完整名称（owner/repo）。',
+									},
+									private: {
+										type: Type.BOOLEAN,
+										description: '是否为私有仓库。',
+									},
+									owner_login: {
+										type: Type.STRING,
+										description: '所有者登录名。',
+									},
+									html_url: {
+										type: Type.STRING,
+										description: '仓库的 HTML URL。',
+									},
+									description: {
+										type: Type.STRING,
+										description: '仓库描述。',
+										nullable: true,
+									},
+									fork: {
+										type: Type.BOOLEAN,
+										description: '是否为 Fork 仓库。',
+									},
+									stargazers_count: {
+										type: Type.NUMBER,
+										description: '星标数量。',
+									},
+									watchers_count: {
+										type: Type.NUMBER,
+										description: '关注者数量。',
+									},
+									language: {
+										type: Type.STRING,
+										description: '主要编程语言。',
+										nullable: true,
+									},
+									forks_count: {
+										type: Type.NUMBER,
+										description: 'Fork 数量。',
+									},
+									open_issues_count: {
+										type: Type.NUMBER,
+										description: '开放 Issue 数量。',
+									},
+									default_branch: {
+										type: Type.STRING,
+										description: '默认分支名称。',
+									},
+									updated_at: {
+										type: Type.STRING,
+										format: 'date-time',
+										description: '仓库最近更新时间。',
+									},
+								},
+								required: [
+									'id',
+									'name',
+									'full_name',
+									'private',
+									'owner_login',
+									'html_url',
+									'fork',
+									'stargazers_count',
+									'watchers_count',
+									'forks_count',
+									'open_issues_count',
+									'default_branch',
+									'updated_at',
+								],
 							},
 						},
 						error: {
