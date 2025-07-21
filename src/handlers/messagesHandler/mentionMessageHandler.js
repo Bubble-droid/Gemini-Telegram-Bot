@@ -237,6 +237,10 @@ async function handleMentionMessage(message, env, isChat = false) {
 			reply_to_message_id: replyToMessageId,
 		});
 
+		if (thinkMessageId) {
+			await scheduleDeletion(env, chatId, thinkMessageId, 30 * 60 * 1_000);
+		}
+
 		const geminiApi = new GeminiApi(env, { chatId, thinkMessageId });
 		try {
 			const response = await geminiApi.generateContent(contents);
@@ -308,14 +312,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 					},
 				]);
 			}
-
-			if (thinkMessageId) {
-				await scheduleDeletion(env, chatId, thinkMessageId, 30 * 60 * 1_000);
-			}
 		} catch (apiError) {
-			if (thinkMessageId) {
-				await scheduleDeletion(env, chatId, thinkMessageId, 30 * 60 * 1_000);
-			}
 			throw apiError;
 		}
 	} catch (error) {
