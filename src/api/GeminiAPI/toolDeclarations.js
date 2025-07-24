@@ -692,6 +692,10 @@ const tools = [
 								type: Type.OBJECT,
 								title: 'Release Item',
 								properties: {
+									id: {
+										type: Type.NUMBER,
+										description: '发布版本 ID。',
+									},
 									tag_name: {
 										type: Type.STRING,
 										description: '发布版本的标签名称。',
@@ -742,6 +746,157 @@ const tools = [
 									'draft',
 								],
 							},
+						},
+						error: {
+							type: Type.STRING,
+							description: '如果发生错误，则包含错误信息。',
+						},
+					},
+				},
+			},
+			{
+				name: 'getReleaseDetails',
+				description:
+					'获取指定 GitHub 仓库中某个发布版本的详细信息，包括所有资产。',
+				behavior: 'BLOCKING',
+				parameters: {
+					type: Type.OBJECT,
+					title: 'Get GitHub Release Details Parameters',
+					properties: {
+						owner: {
+							type: Type.STRING,
+							description: 'GitHub 仓库所有者，例如 "GUI-for-Cores"。',
+							example: 'GUI-for-Cores',
+						},
+						repo: {
+							type: Type.STRING,
+							description: 'GitHub 仓库名称，例如 "GUI.for.SingBox"。',
+							example: 'GUI.for.SingBox',
+						},
+						release_id: {
+							type: Type.NUMBER,
+							description:
+								'发布版本的 ID，例如 227541695。如果提供，将优先使用此 ID。',
+							example: 227541695,
+							nullable: true,
+						},
+						tag_name: {
+							type: Type.STRING,
+							description:
+								'发布版本的标签名称，例如 "rolling-release-alpha"。如果未提供 release_id 或其查询失败，将尝试使用此标签名称。',
+							example: 'rolling-release-alpha',
+							nullable: true,
+						},
+					},
+					required: ['owner', 'repo'],
+				},
+				response: {
+					type: Type.OBJECT,
+					title: 'Get GitHub Release Details Response',
+					properties: {
+						releaseDetails: {
+							type: Type.OBJECT,
+							description: '发布版本的详细信息。',
+							properties: {
+								id: {
+									type: Type.NUMBER,
+									description: '发布版本 ID。',
+								},
+								tag_name: {
+									type: Type.STRING,
+									description: '发布版本的标签名称。',
+								},
+								name: {
+									type: Type.STRING,
+									description: '发布版本的名称。',
+								},
+								body: {
+									type: Type.STRING,
+									description: '发布版本的描述。',
+									nullable: true,
+								},
+								author_login: {
+									type: Type.STRING,
+									description: '发布版本的作者登录名称。',
+								},
+								published_at: {
+									type: Type.STRING,
+									format: 'date-time',
+									description: '发布时间。',
+								},
+								html_url: {
+									type: Type.STRING,
+									description: '发布版本的 HTML URL。',
+								},
+								prerelease: {
+									type: Type.BOOLEAN,
+									description: '是否为预发布版本。',
+								},
+								draft: {
+									type: Type.BOOLEAN,
+									description: '是否为草稿版本。',
+								},
+								assets: {
+									type: Type.ARRAY,
+									description: '发布版本包含的资产列表。',
+									items: {
+										type: Type.OBJECT,
+										title: 'Release Asset Item',
+										properties: {
+											id: {
+												type: Type.NUMBER,
+												description: '资产 ID。',
+											},
+											name: {
+												type: Type.STRING,
+												description: '资产的文件名。',
+											},
+											browser_download_url: {
+												type: Type.STRING,
+												description: '资产的下载 URL。',
+											},
+											size: {
+												type: Type.NUMBER,
+												description: '资产的文件大小（字节）。',
+											},
+											download_count: {
+												type: Type.NUMBER,
+												description: '资产的下载次数。',
+											},
+											created_at: {
+												type: Type.STRING,
+												format: 'date-time',
+												description: '资产创建时间。',
+											},
+											updated_at: {
+												type: Type.STRING,
+												format: 'date-time',
+												description: '资产最近更新时间。',
+											},
+										},
+										required: [
+											'id',
+											'name',
+											'browser_download_url',
+											'size',
+											'download_count',
+											'created_at',
+											'updated_at',
+										],
+									},
+								},
+							},
+							required: [
+								'id',
+								'tag_name',
+								'name',
+								'author_login',
+								'published_at',
+								'html_url',
+								'prerelease',
+								'draft',
+								'assets',
+							],
 						},
 						error: {
 							type: Type.STRING,
@@ -1162,6 +1317,431 @@ const tools = [
 									'open_issues_count',
 									'default_branch',
 									'updated_at',
+								],
+							},
+						},
+						error: {
+							type: Type.STRING,
+							description: '如果发生错误，则包含错误信息。',
+						},
+					},
+				},
+			},
+			{
+				name: 'getCurrentTime',
+				description: '获取当前 UTC+8 时间并格式化字符串。',
+				behavior: 'BLOCKING',
+				parameters: {
+					type: Type.OBJECT,
+					title: 'GetCurrentTime Parameters',
+				},
+				response: {
+					type: Type.OBJECT,
+					title: 'GetCurrentTime Response',
+					properties: {
+						currentTime: {
+							type: Type.STRING,
+							description:
+								'格式化后的当前时间字符串 (YYYY-MM-DD HH:mm:ss UTC+8)。',
+							example: '2024-10-27 10:30:00 UTC+8',
+						},
+						error: {
+							type: Type.STRING,
+							description: '如果发生错误，则包含错误信息。',
+						},
+					},
+					required: ['currentTime'],
+				},
+			},
+			{
+				name: 'searchGlobalIssuesByKeyword',
+				description:
+					'根据关键词在 GitHub 全站范围内搜索 Issue，默认会搜索所有你有权限查看的公开仓库和私有仓库中匹配的 Issue。',
+				behavior: 'BLOCKING',
+				parameters: {
+					type: Type.OBJECT,
+					title: 'Search GitHub Global Issues Parameters',
+					properties: {
+						keyword: {
+							type: Type.STRING,
+							description:
+								'用于搜索 Issue 内容和标题的关键词，多个关键词请用空格分隔，例如 "tun error"。',
+							example: 'tun error',
+						},
+						state: {
+							type: Type.STRING,
+							description:
+								'Issue 的状态，可以是 "open"（开放）、"closed"（关闭）或 "all"（所有），默认为 "all"。',
+							default: 'all',
+							enum: ['open', 'closed', 'all'],
+							example: 'all',
+						},
+						sort: {
+							type: Type.STRING,
+							description:
+								'排序方式，例如 "created"（创建时间）、"updated"（更新时间）或 "comments"（评论数量），默认为 "created"。',
+							default: 'created',
+							enum: ['created', 'updated', 'comments'],
+							example: 'created',
+						},
+						order: {
+							type: Type.STRING,
+							description:
+								'排序方向，"asc"（升序）或 "desc"（降序），默认为 "desc"。',
+							default: 'desc',
+							enum: ['asc', 'desc'],
+							example: 'desc',
+						},
+						per_page: {
+							type: Type.NUMBER,
+							description: '每页返回的 Issue 数量，默认为 30，最大 100。',
+							default: 30,
+							minimum: 1,
+							maximum: 100,
+							example: 30,
+						},
+						page: {
+							type: Type.NUMBER,
+							description: '页码，默认为 1。',
+							default: 1,
+							minimum: 1,
+							example: 1,
+						},
+					},
+					required: ['keyword'],
+				},
+				response: {
+					type: Type.OBJECT,
+					title: 'Search GitHub Global Issues Response',
+					properties: {
+						issues: {
+							type: Type.ARRAY,
+							description: '获取到的 Issue 列表。',
+							items: {
+								type: Type.OBJECT,
+								title: 'Global Issue Item',
+								properties: {
+									id: {
+										type: Type.NUMBER,
+										description: 'Issue ID。',
+									},
+									number: {
+										type: Type.NUMBER,
+										description: 'Issue 的编号。',
+									},
+									html_url: {
+										type: Type.STRING,
+										description: 'Issue 的 HTML URL。',
+									},
+									title: {
+										type: Type.STRING,
+										description: 'Issue 标题。',
+									},
+									state: {
+										type: Type.STRING,
+										description: 'Issue 状态（open 或 closed）。',
+									},
+									created_at: {
+										type: Type.STRING,
+										format: 'date-time',
+										description: 'Issue 创建时间。',
+									},
+									updated_at: {
+										type: Type.STRING,
+										format: 'date-time',
+										description: 'Issue 最近更新时间。',
+									},
+									comments: {
+										type: Type.NUMBER,
+										description: 'Issue 的评论数量。',
+									},
+									author_login: {
+										type: Type.STRING,
+										description: 'Issue 创建者登录名。',
+									},
+									labels: {
+										type: Type.ARRAY,
+										description: 'Issue 标签列表。',
+										items: {
+											type: Type.STRING,
+											description: '标签名称。',
+										},
+									},
+									body: {
+										type: Type.STRING,
+										description: 'Issue 内容描述。',
+										nullable: true,
+									},
+									repository_url: {
+										type: Type.STRING,
+										description: 'Issue 所在仓库的 API URL。',
+									},
+								},
+								required: [
+									'id',
+									'number',
+									'html_url',
+									'title',
+									'state',
+									'created_at',
+									'updated_at',
+									'comments',
+									'author_login',
+									'repository_url',
+								],
+							},
+						},
+						total_count: {
+							type: Type.NUMBER,
+							description: '匹配到的 Issue 总数。',
+						},
+						error: {
+							type: Type.STRING,
+							description: '如果发生错误，则包含错误信息。',
+						},
+					},
+				},
+			},
+			{
+				name: 'searchIssuesInRepo',
+				description:
+					'根据关键词在指定的 GitHub 仓库内搜索 Issue，并可根据状态、排序方式和排序方向返回匹配的 Issue 列表。',
+				behavior: 'BLOCKING',
+				parameters: {
+					type: Type.OBJECT,
+					title: 'Search GitHub Issues Parameters',
+					properties: {
+						keyword: {
+							type: Type.STRING,
+							description:
+								'用于搜索 Issue 内容和标题的关键词，多个关键词请用空格分隔，例如 "tun error"。',
+							example: 'tun error',
+						},
+						owner: {
+							type: Type.STRING,
+							description: 'GitHub 仓库所有者，例如 "SagerNet"。',
+							example: 'SagerNet',
+						},
+						repo: {
+							type: Type.STRING,
+							description: 'GitHub 仓库名称，例如 "sing-box"。',
+							example: 'sing-box',
+						},
+						state: {
+							type: Type.STRING,
+							description:
+								'Issue 的状态，可以是 "open"（开放）、"closed"（关闭）或 "all"（所有），默认为 "all"。',
+							default: 'all',
+							enum: ['open', 'closed', 'all'],
+							example: 'all',
+						},
+						sort: {
+							type: Type.STRING,
+							description:
+								'排序方式，例如 "created"（创建时间）、"updated"（更新时间）或 "comments"（评论数量），默认为 "created"。',
+							default: 'created',
+							enum: ['created', 'updated', 'comments'],
+							example: 'created',
+						},
+						order: {
+							type: Type.STRING,
+							description:
+								'排序方向，"asc"（升序）或 "desc"（降序），默认为 "desc"。',
+							default: 'desc',
+							enum: ['asc', 'desc'],
+							example: 'desc',
+						},
+						per_page: {
+							type: Type.NUMBER,
+							description: '每页返回的 Issue 数量，默认为 30，最大 100。',
+							default: 30,
+							minimum: 1,
+							maximum: 100,
+							example: 30,
+						},
+						page: {
+							type: Type.NUMBER,
+							description: '页码，默认为 1。',
+							default: 1,
+							minimum: 1,
+							example: 1,
+						},
+					},
+					required: ['keyword', 'owner', 'repo'],
+				},
+				response: {
+					type: Type.OBJECT,
+					title: 'Search GitHub Issues Response',
+					properties: {
+						issues: {
+							type: Type.ARRAY,
+							description: '获取到的 Issue 列表。',
+							items: {
+								type: Type.OBJECT,
+								title: 'Issue Item',
+								properties: {
+									id: {
+										type: Type.NUMBER,
+										description: 'Issue ID。',
+									},
+									number: {
+										type: Type.NUMBER,
+										description: 'Issue 的编号。',
+									},
+									html_url: {
+										type: Type.STRING,
+										description: 'Issue 的 HTML URL。',
+									},
+									title: {
+										type: Type.STRING,
+										description: 'Issue 标题。',
+									},
+									state: {
+										type: Type.STRING,
+										description: 'Issue 状态（open 或 closed）。',
+									},
+									created_at: {
+										type: Type.STRING,
+										format: 'date-time',
+										description: 'Issue 创建时间。',
+									},
+									updated_at: {
+										type: Type.STRING,
+										format: 'date-time',
+										description: 'Issue 最近更新时间。',
+									},
+									comments: {
+										type: Type.NUMBER,
+										description: 'Issue 的评论数量。',
+									},
+									author_login: {
+										type: Type.STRING,
+										description: 'Issue 创建者登录名。',
+									},
+									labels: {
+										type: Type.ARRAY,
+										description: 'Issue 标签列表。',
+										items: {
+											type: Type.STRING,
+											description: '标签名称。',
+										},
+									},
+									body: {
+										type: Type.STRING,
+										description: 'Issue 内容描述。',
+										nullable: true,
+									},
+								},
+								required: [
+									'id',
+									'number',
+									'html_url',
+									'title',
+									'state',
+									'created_at',
+									'updated_at',
+									'comments',
+									'author_login',
+								],
+							},
+						},
+						total_count: {
+							type: Type.NUMBER,
+							description: '匹配到的 Issue 总数。',
+						},
+						error: {
+							type: Type.STRING,
+							description: '如果发生错误，则包含错误信息。',
+						},
+					},
+				},
+			},
+			{
+				name: 'getIssueComments',
+				description: '获取指定 GitHub 仓库中某个 Issue 的所有评论。',
+				behavior: 'BLOCKING',
+				parameters: {
+					type: Type.OBJECT,
+					title: 'Get GitHub Issue Comments Parameters',
+					properties: {
+						owner: {
+							type: Type.STRING,
+							description: 'GitHub 仓库所有者，例如 "SagerNet"。',
+							example: 'SagerNet',
+						},
+						repo: {
+							type: Type.STRING,
+							description: 'GitHub 仓库名称，例如 "sing-box"。',
+							example: 'sing-box',
+						},
+						issue_number: {
+							type: Type.NUMBER,
+							description: 'Issue 的编号，例如 3202。',
+							example: 3202,
+						},
+						per_page: {
+							type: Type.NUMBER,
+							description: '每页返回的评论数量，默认为 30，最大 100。',
+							default: 30,
+							minimum: 1,
+							maximum: 100,
+							example: 30,
+						},
+						page: {
+							type: Type.NUMBER,
+							description: '页码，默认为 1。',
+							default: 1,
+							minimum: 1,
+							example: 1,
+						},
+					},
+					required: ['owner', 'repo', 'issue_number'],
+				},
+				response: {
+					type: Type.OBJECT,
+					title: 'Get GitHub Issue Comments Response',
+					properties: {
+						comments: {
+							type: Type.ARRAY,
+							description: '获取到的 Issue 评论列表。',
+							items: {
+								type: Type.OBJECT,
+								title: 'Issue Comment Item',
+								properties: {
+									id: {
+										type: Type.NUMBER,
+										description: '评论 ID。',
+									},
+									html_url: {
+										type: Type.STRING,
+										description: '评论的 HTML URL。',
+									},
+									user_login: {
+										type: Type.STRING,
+										description: '评论作者的登录名。',
+									},
+									created_at: {
+										type: Type.STRING,
+										format: 'date-time',
+										description: '评论创建时间。',
+									},
+									updated_at: {
+										type: Type.STRING,
+										format: 'date-time',
+										description: '评论最近更新时间。',
+									},
+									body: {
+										type: Type.STRING,
+										description: '评论内容。',
+									},
+								},
+								required: [
+									'id',
+									'html_url',
+									'user_login',
+									'created_at',
+									'updated_at',
+									'body',
 								],
 							},
 						},

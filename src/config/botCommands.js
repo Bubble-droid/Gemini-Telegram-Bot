@@ -4,7 +4,7 @@
  * 定义 Bot 命令及其描述和对应的处理函数名称
  */
 const botCommands = [
-	{ command: 'start', description: '欢迎使用' },
+	{ command: 'start', description: '开始使用' },
 	{ command: 'clear', description: '清理对话上下文' },
 	{ command: 'tools', description: '模型可用工具' },
 	// { command: 'debug', description: '进入调试模式' },

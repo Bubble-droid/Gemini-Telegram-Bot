@@ -33,7 +33,11 @@ async function updateChatContents(env, chatId, userId, askContents) {
 					.map((cc) => {
 						if (cc.fileData) {
 							return '[文件]';
-						} else {
+						} else if (cc.thought) {
+							return '[想法]';
+						} else if (cc.thoughtSignature) {
+							return '';
+						} else if (cc.text) {
 							return cc.text;
 						}
 					})

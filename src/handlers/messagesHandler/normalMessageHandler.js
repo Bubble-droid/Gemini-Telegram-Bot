@@ -17,6 +17,9 @@ async function handleNormalMessage(message, env) {
 		const config = getConfig(env);
 		const botName = config.botName.replace('@', '').trim();
 		if (message.reply_to_message.from.username === botName) {
+			message.reply_to_message.text = message.reply_to_message.text
+				.replace('⚠️ AI 的回答无法保证百分百准确，请自行判断！', '')
+				.trim();
 			await handleMentionMessage(message, env, true);
 		}
 	} catch (error) {

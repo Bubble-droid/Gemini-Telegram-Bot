@@ -1,6 +1,7 @@
 // src/api/GeminiAPI/toolExecutors.js
 
 import uploadFileToGemini from '../../handlers/filesHandler/geminiFileProcessor';
+import { getCurrentTime } from '../../utils/helpers';
 
 /**
  * 执行工具的映射对象
@@ -130,9 +131,9 @@ const toolExecutors = {
 		// q=Keywords+in:file+repo:Owner/Repo+path:PATH/TO&ref:Branch
 		const apiUrl = `https://api.github.com/search/code?q=${encodeURIComponent(
 			keyword
-		)}+in:file+repo:${encodeURIComponent(`${owner}/${repo}`)}${
-			path ? `+path:${path}` : ''
-		}${branch ? `&ref=${encodeURIComponent(branch)}` : ''}`;
+		)}+in:file+repo:${`${owner}/${repo}`}${path ? `+path:${path}` : ''}${
+			branch ? `&ref=${branch}` : ''
+		}`;
 
 		try {
 			console.log(`尝试通过 GitHub API 搜索文件: ${apiUrl}`);
@@ -206,10 +207,8 @@ const toolExecutors = {
 
 		// 确保 path 不以斜杠开头，如果 path 为空则不需要处理
 		const cleanedPath = path.startsWith('/') ? path.substring(1) : path;
-		const apiUrl = `https://api.github.com/repos/${encodeURIComponent(
-			owner
-		)}/${encodeURIComponent(repo)}/contents/${cleanedPath}${
-			branch ? `?ref=${encodeURIComponent(branch)}` : ''
+		const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${cleanedPath}${
+			branch ? `?ref=${branch}` : ''
 		}`;
 
 		try {
@@ -287,10 +286,8 @@ const toolExecutors = {
 
 		try {
 			// 1. 获取分支的最新 commit SHA
-			const branchApiUrl = `https://api.github.com/repos/${encodeURIComponent(
-				owner
-			)}/${encodeURIComponent(repo)}/branches/${
-				branch ? `${encodeURIComponent(branch)}` : ''
+			const branchApiUrl = `https://api.github.com/repos/${owner}/${repo}/branches/${
+				branch ? `${branch}` : ''
 			}`;
 			console.log(`尝试获取分支信息: ${branchApiUrl}`);
 			const branchResponse = await fetch(branchApiUrl, {
@@ -316,11 +313,7 @@ const toolExecutors = {
 			console.log(`获取到分支 ${branch} 的 tree SHA: ${treeSha}`);
 
 			// 2. 使用 tree SHA 递归获取仓库文件树
-			const treeApiUrl = `https://api.github.com/repos/${encodeURIComponent(
-				owner
-			)}/${encodeURIComponent(repo)}/git/trees/${encodeURIComponent(
-				treeSha
-			)}?recursive=1`;
+			const treeApiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${treeSha}?recursive=1`;
 			console.log(`尝试递归获取仓库文件树: ${treeApiUrl}`);
 			const treeResponse = await fetch(treeApiUrl, {
 				method: 'GET',
@@ -489,10 +482,8 @@ const toolExecutors = {
 		}
 
 		// 构建 GitHub API 提交记录 URL
-		let apiUrl = `https://api.github.com/repos/${encodeURIComponent(
-			owner
-		)}/${encodeURIComponent(repo)}/commits?${
-			branch ? `sha=${encodeURIComponent(branch)}&` : ''
+		let apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?${
+			branch ? `sha=${branch}&` : ''
 		}${path ? `path=${path}&` : ''}per_page=${per_page}&page=${page}`;
 
 		try {
@@ -573,9 +564,7 @@ const toolExecutors = {
 		}
 
 		// 构建 GitHub API 发布版本 URL，包含 per_page 和 page 参数
-		const apiUrl = `https://api.github.com/repos/${encodeURIComponent(
-			owner
-		)}/${encodeURIComponent(repo)}/releases?per_page=${per_page}&page=${page}`;
+		const apiUrl = `https://api.github.com/repos/${owner}/${repo}/releases?per_page=${per_page}&page=${page}`;
 
 		try {
 			console.log(`尝试通过 GitHub API 获取发布版本: ${apiUrl}`);
@@ -604,6 +593,7 @@ const toolExecutors = {
 			if (Array.isArray(data)) {
 				for (const item of data) {
 					releases.push({
+						id: item.id,
 						tag_name: item.tag_name,
 						name: item.name,
 						body: item.body,
@@ -636,6 +626,147 @@ const toolExecutors = {
 	},
 
 	/**
+	 * 执行 getReleaseDetails 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'GUI-for-Cores', repo: 'GUI.for.SingBox', release_id: 227541695 } 或 { owner: 'GUI-for-Cores', repo: 'GUI.for.SingBox', tag_name: 'rolling-release-alpha' }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 releaseDetails 字段，releaseDetails 是发布版本的详细信息
+	 */
+	getReleaseDetails: async (args) => {
+		console.log('执行工具: getReleaseDetails, 参数:', args);
+		const { owner, repo, release_id, tag_name } = args;
+		const githubToken = toolExecutors.githubToken;
+
+		if (!owner || !repo) {
+			console.warn(
+				'getReleaseDetails 工具调用参数无效: 缺少仓库所有者或仓库名称。'
+			);
+			return {
+				error: 'getReleaseDetails 工具调用参数无效，缺少仓库所有者或仓库名称。',
+			};
+		}
+
+		if (!release_id && !tag_name) {
+			console.warn(
+				'getReleaseDetails 工具调用参数无效: 必须提供 release_id 或 tag_name。'
+			);
+			return {
+				error:
+					'getReleaseDetails 工具调用参数无效，必须提供 release_id 或 tag_name。',
+			};
+		}
+
+		if (!githubToken) {
+			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
+			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
+		}
+
+		let apiUrl = '';
+		let fetchError = null;
+		let releaseData = null;
+
+		// 优先尝试使用 release_id
+		if (release_id) {
+			apiUrl = `https://api.github.com/repos/${owner}/${repo}/releases/${release_id}`;
+			console.log(`尝试通过 GitHub API 获取发布版本详情 (按 ID): ${apiUrl}`);
+			try {
+				const response = await fetch(apiUrl, {
+					method: 'GET',
+					headers: {
+						Accept: 'application/vnd.github+json',
+						Authorization: `Bearer ${githubToken}`,
+						'User-Agent': 'Gemini-Telegram-Bot',
+					},
+				});
+
+				if (response.ok) {
+					releaseData = await response.json();
+				} else {
+					const errorText = await response.text();
+					console.warn(
+						`GitHub API 获取发布版本详情 (按 ID) 失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`
+					);
+					fetchError = `GitHub API 获取发布版本详情 (按 ID) 失败 (状态码: ${response.status}) - ${errorText}`;
+				}
+			} catch (error) {
+				console.error(
+					`GitHub API 获取发布版本详情 (按 ID) 时发生网络错误: ${error}, URL: ${apiUrl}`
+				);
+				fetchError = `GitHub API 获取发布版本详情 (按 ID) 时发生网络错误 - ${
+					error.message || '未知错误'
+				}`;
+			}
+		}
+
+		// 如果通过 release_id 未获取到数据或发生错误，并且提供了 tag_name，则尝试使用 tag_name
+		if (!releaseData && tag_name) {
+			apiUrl = `https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag_name}`;
+			console.log(`尝试通过 GitHub API 获取发布版本详情 (按 Tag): ${apiUrl}`);
+			try {
+				const response = await fetch(apiUrl, {
+					method: 'GET',
+					headers: {
+						Accept: 'application/vnd.github+json',
+						Authorization: `Bearer ${githubToken}`,
+						'User-Agent': 'Gemini-Telegram-Bot',
+					},
+				});
+
+				if (response.ok) {
+					releaseData = await response.json();
+					fetchError = null; // 成功获取，清除之前的错误
+				} else {
+					const errorText = await response.text();
+					console.warn(
+						`GitHub API 获取发布版本详情 (按 Tag) 失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`
+					);
+					// 如果 ID 和 Tag 都失败，保留最后一个错误信息
+					fetchError = `GitHub API 获取发布版本详情 (按 Tag) 失败 (状态码: ${response.status}) - ${errorText}`;
+				}
+			} catch (error) {
+				console.error(
+					`GitHub API 获取发布版本详情 (按 Tag) 时发生网络错误: ${error}, URL: ${apiUrl}`
+				);
+				// 如果 ID 和 Tag 都失败，保留最后一个错误信息
+				fetchError = `GitHub API 获取发布版本详情 (按 Tag) 时发生网络错误 - ${
+					error.message || '未知错误'
+				}`;
+			}
+		}
+
+		if (!releaseData) {
+			return { error: fetchError || '未能获取到发布版本详细信息。' };
+		}
+
+		// 提取并格式化所需的发布版本详细信息
+		const releaseDetails = {
+			id: releaseData.id,
+			tag_name: releaseData.tag_name,
+			name: releaseData.name,
+			body: releaseData.body,
+			author_login: releaseData.author ? releaseData.author.login : '未知',
+			published_at: releaseData.published_at,
+			html_url: releaseData.html_url,
+			prerelease: releaseData.prerelease,
+			draft: releaseData.draft,
+			assets: releaseData.assets.map((asset) => ({
+				id: asset.id,
+				name: asset.name,
+				browser_download_url: asset.browser_download_url,
+				size: asset.size,
+				download_count: asset.download_count,
+				created_at: asset.created_at,
+				updated_at: asset.updated_at,
+			})),
+		};
+
+		console.log(
+			`getReleaseDetails 工具执行完毕，获取到发布版本 ${
+				release_id || tag_name
+			} 的详细信息。`
+		);
+		return { releaseDetails };
+	},
+
+	/**
 	 * 执行 getCommitDetails 工具
 	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box', commit_sha: '2464ced48c504eb0dee616c6d474813621779afc' }
 	 * @returns {Promise<object>} - 工具执行结果对象，包含提交的关键详细信息
@@ -660,9 +791,7 @@ const toolExecutors = {
 			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
 		}
 
-		const apiUrl = `https://api.github.com/repos/${encodeURIComponent(
-			owner
-		)}/${encodeURIComponent(repo)}/commits/${encodeURIComponent(commit_sha)}`;
+		const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits/${commit_sha}`;
 
 		try {
 			console.log(`尝试通过 GitHub API 获取提交详情: ${apiUrl}`);
@@ -844,13 +973,7 @@ const toolExecutors = {
 		}
 
 		// 构建 GitHub API URL，根据 userOrOrg 是用户还是组织来确定前缀
-		const apiUrl = `https://api.github.com/${
-			userOrOrg.includes('/')
-				? `repos/${encodeURIComponent(userOrOrg)}`
-				: `users/${encodeURIComponent(userOrOrg)}`
-		}/repos?type=${encodeURIComponent(type)}&sort=${encodeURIComponent(
-			sort
-		)}&direction=${encodeURIComponent(direction)}`;
+		const apiUrl = `https://api.github.com/users/${userOrOrg}/repos?type=${type}&sort=${sort}&direction=${direction}`;
 
 		try {
 			console.log(`尝试通过 GitHub API 获取仓库列表: ${apiUrl}`);
@@ -937,9 +1060,7 @@ const toolExecutors = {
 			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
 		}
 
-		const apiUrl = `https://api.github.com/repos/${encodeURIComponent(
-			owner
-		)}/${encodeURIComponent(repo)}/branches`;
+		const apiUrl = `https://api.github.com/repos/${owner}/${repo}/branches`;
 
 		try {
 			console.log(`尝试通过 GitHub API 获取分支列表: ${apiUrl}`);
@@ -1020,7 +1141,7 @@ const toolExecutors = {
 			keyword
 		)}${
 			sort !== 'best match' ? `&sort=${encodeURIComponent(sort)}` : ''
-		}&order=${encodeURIComponent(order)}`;
+		}&order=${order}`;
 
 		try {
 			console.log(`尝试通过 GitHub API 搜索仓库: ${apiUrl}`);
@@ -1079,6 +1200,307 @@ const toolExecutors = {
 			);
 			return {
 				error: `GitHub API 搜索仓库时发生网络错误 - ${
+					fetchError.message || '未知错误'
+				}`,
+			};
+		}
+	},
+
+	/**
+	 * 执行 getCurrentTime 工具
+	 * @returns {object} 工具执行结果对象，包含 currentTime 字段
+	 */
+	getCurrentTime: () => {
+		console.log('执行工具: getCurrentTime');
+		const currentTime = getCurrentTime(); // 调用 utils/helpers.js 中的 getCurrentTime 函数
+		console.log('getCurrentTime 工具执行完毕，当前时间:', currentTime);
+		return { currentTime };
+	},
+
+	/**
+	 * 执行 searchGlobalIssuesByKeyword 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { keyword: 'tun error', state: 'all', sort: 'created', order: 'desc' }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 issues 字段（Issue 列表）和 total_count 字段（总数）
+	 */
+	searchGlobalIssuesByKeyword: async (args) => {
+		console.log('执行工具: searchGlobalIssuesByKeyword, 参数:', args);
+		const {
+			keyword,
+			state = 'all', // 默认状态为 all
+			sort = 'created', // 默认按创建时间排序
+			order = 'desc', // 默认降序
+			per_page = 30, // 默认每页 30 个
+			page = 1, // 默认页码 1
+		} = args;
+		const githubToken = toolExecutors.githubToken;
+
+		if (!keyword) {
+			console.warn(
+				'searchGlobalIssuesByKeyword 工具调用参数无效: 缺少关键词。'
+			);
+			return {
+				error: 'searchGlobalIssuesByKeyword 工具调用参数无效，缺少关键词。',
+			};
+		}
+
+		if (!githubToken) {
+			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索 Issue。');
+			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索 Issue。' };
+		}
+
+		// 构建 GitHub API 搜索 Issue 的 URL (全局搜索)
+		// q=keyword+is:issue
+		const query = `${encodeURIComponent(keyword)}+is:issue`;
+
+		const apiUrl = `https://api.github.com/search/issues?q=${query}&state=${state}&sort=${sort}&order=${order}&per_page=${per_page}&page=${page}`;
+
+		try {
+			console.log(`尝试通过 GitHub API 全局搜索 Issue: ${apiUrl}`);
+			const response = await fetch(apiUrl, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/vnd.github+json',
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot', // GitHub API 要求 User-Agent
+				},
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.warn(
+					`GitHub API 全局搜索 Issue 失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`
+				);
+				return {
+					error: `GitHub API 全局搜索 Issue 失败 (状态码: ${response.status}) - ${errorText}`,
+				};
+			}
+
+			const data = await response.json();
+			const issues = [];
+
+			if (data.items && Array.isArray(data.items)) {
+				for (const item of data.items) {
+					issues.push({
+						id: item.id,
+						number: item.number,
+						html_url: item.html_url,
+						title: item.title,
+						state: item.state,
+						created_at: item.created_at,
+						updated_at: item.updated_at,
+						comments: item.comments,
+						author_login: item.user ? item.user.login : '未知', // 确保 user 存在
+						labels: item.labels ? item.labels.map((label) => label.name) : [], // 提取标签名称
+						body: item.body,
+						repository_url: item.repository_url,
+					});
+				}
+			}
+			console.log(
+				`searchGlobalIssuesByKeyword 工具执行完毕，找到 ${issues.length} 个 Issue，总数 ${data.total_count}。`
+			);
+			return { issues, total_count: data.total_count };
+		} catch (fetchError) {
+			console.error(
+				`GitHub API 全局搜索 Issue 时发生网络错误: ${fetchError}, URL: ${
+					fetchError.url || '未知'
+				}`
+			);
+			return {
+				error: `GitHub API 全局搜索 Issue 时发生网络错误 - ${
+					fetchError.message || '未知错误'
+				}`,
+			};
+		}
+	},
+
+	/**
+	 * 执行 searchIssuesInRepo 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { keyword: 'tun error', owner: 'SagerNet', repo: 'sing-box', state: 'all', sort: 'created', order: 'desc' }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 issues 字段（Issue 列表）和 total_count 字段（总数）
+	 */
+	searchIssuesInRepo: async (args) => {
+		console.log('执行工具: searchIssuesInRepo, 参数:', args);
+		const {
+			keyword,
+			owner,
+			repo,
+			state = 'all', // 默认状态为 all
+			sort = 'created', // 默认按创建时间排序
+			order = 'desc', // 默认降序
+			per_page = 30, // 默认每页 10 个
+			page = 1, // 默认页码 1
+		} = args;
+		const githubToken = toolExecutors.githubToken;
+
+		if (!keyword || !owner || !repo) {
+			console.warn(
+				'searchIssuesInRepo 工具调用参数无效: 缺少关键词、仓库所有者或仓库名称。'
+			);
+			return {
+				error:
+					'searchIssuesInRepo 工具调用参数无效，缺少关键词、仓库所有者或仓库名称。',
+			};
+		}
+
+		if (!githubToken) {
+			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索 Issue。');
+			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索 Issue。' };
+		}
+
+		// 构建 GitHub API 搜索 Issue 的 URL
+		// q=keyword+repo:owner/repo+is:issue
+		const query = `${encodeURIComponent(
+			keyword
+		)}+repo:${`${owner}/${repo}`}+is:issue`;
+
+		const apiUrl = `https://api.github.com/search/issues?q=${query}&state=${state}&sort=${sort}&order=${order}&per_page=${per_page}&page=${page}`;
+
+		try {
+			console.log(`尝试通过 GitHub API 搜索 Issue: ${apiUrl}`);
+			const response = await fetch(apiUrl, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/vnd.github+json',
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot', // GitHub API 要求 User-Agent
+				},
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.warn(
+					`GitHub API 搜索 Issue 失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`
+				);
+				return {
+					error: `GitHub API 搜索 Issue 失败 (状态码: ${response.status}) - ${errorText}`,
+				};
+			}
+
+			const data = await response.json();
+			const issues = [];
+
+			if (data.items && Array.isArray(data.items)) {
+				for (const item of data.items) {
+					issues.push({
+						id: item.id,
+						number: item.number,
+						html_url: item.html_url,
+						title: item.title,
+						state: item.state,
+						created_at: item.created_at,
+						updated_at: item.updated_at,
+						comments: item.comments,
+						author_login: item.user ? item.user.login : '未知', // 确保 user 存在
+						labels: item.labels ? item.labels.map((label) => label.name) : [], // 提取标签名称
+						body: item.body,
+					});
+				}
+			}
+			console.log(
+				`searchIssuesInRepo 工具执行完毕，找到 ${issues.length} 个 Issue，总数 ${data.total_count}。`
+			);
+			return { issues, total_count: data.total_count };
+		} catch (fetchError) {
+			console.error(
+				`GitHub API 搜索 Issue 时发生网络错误: ${fetchError}, URL: ${
+					fetchError.url || '未知'
+				}`
+			);
+			return {
+				error: `GitHub API 搜索 Issue 时发生网络错误 - ${
+					fetchError.message || '未知错误'
+				}`,
+			};
+		}
+	},
+
+	/**
+	 * 执行 getIssueComments 工具
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { owner: 'SagerNet', repo: 'sing-box', issue_number: 3202, per_page: 30, page: 1 }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 comments 字段（评论列表）
+	 */
+	getIssueComments: async (args) => {
+		console.log('执行工具: getIssueComments, 参数:', args);
+		const {
+			owner,
+			repo,
+			issue_number,
+			per_page = 30, // 默认每页 30 个
+			page = 1, // 默认页码 1
+		} = args;
+		const githubToken = toolExecutors.githubToken;
+
+		if (!owner || !repo || !issue_number) {
+			console.warn(
+				'getIssueComments 工具调用参数无效: 缺少仓库所有者、仓库名称或 Issue 编号。'
+			);
+			return {
+				error:
+					'getIssueComments 工具调用参数无效，缺少仓库所有者、仓库名称或 Issue 编号。',
+			};
+		}
+
+		if (!githubToken) {
+			console.error(
+				'GITHUB_TOKEN 未配置，无法执行 GitHub API 获取 Issue 评论。'
+			);
+			return {
+				error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API 获取 Issue 评论。',
+			};
+		}
+
+		// 构建 GitHub API 获取 Issue 评论的 URL
+		const apiUrl = `https://api.github.com/repos/${owner}/${repo}/issues/${issue_number}/comments?per_page=${per_page}&page=${page}`;
+
+		try {
+			console.log(`尝试通过 GitHub API 获取 Issue 评论: ${apiUrl}`);
+			const response = await fetch(apiUrl, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/vnd.github+json',
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot', // GitHub API 要求 User-Agent
+				},
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.warn(
+					`GitHub API 获取 Issue 评论失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`
+				);
+				return {
+					error: `GitHub API 获取 Issue 评论失败 (状态码: ${response.status}) - ${errorText}`,
+				};
+			}
+
+			const data = await response.json();
+			const comments = [];
+
+			if (Array.isArray(data)) {
+				for (const item of data) {
+					comments.push({
+						id: item.id,
+						html_url: item.html_url,
+						user_login: item.user ? item.user.login : '未知', // 确保 user 存在
+						created_at: item.created_at,
+						updated_at: item.updated_at,
+						body: item.body,
+					});
+				}
+			}
+			console.log(
+				`getIssueComments 工具执行完毕，找到 ${comments.length} 条评论。`
+			);
+			return { comments };
+		} catch (fetchError) {
+			console.error(
+				`GitHub API 获取 Issue 评论时发生网络错误: ${fetchError}, URL: ${
+					fetchError.url || '未知'
+				}`
+			);
+			return {
+				error: `GitHub API 获取 Issue 评论时发生网络错误 - ${
 					fetchError.message || '未知错误'
 				}`,
 			};

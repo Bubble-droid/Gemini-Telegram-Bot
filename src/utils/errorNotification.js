@@ -2,27 +2,7 @@
 
 import getConfig from '../env';
 import TelegramBot from '../api/TelegramBot';
-
-/**
- * 获取当前 UTC+8 时间并格式化
- * @returns {Promise<string>} 格式化后的时间字符串 (YYYY-MM-DD HH:mm:ss)
- */
-async function getCurrentTime() {
-	// 使用 toLocaleString 简化时间格式化，指定时区和格式选项
-	const now = new Date();
-	return now
-		.toLocaleString('zh-CN', {
-			year: 'numeric',
-			month: '2-digit',
-			day: '2-digit',
-			hour: '2-digit',
-			minute: '2-digit',
-			second: '2-digit',
-			hour12: false, // 使用 24 小时制
-			timeZone: 'Asia/Shanghai', // 指定 UTC+8 时区
-		})
-		.replace(/\//g, '-'); // 将日期分隔符从 '/' 替换为 '-'
-}
+import { getCurrentTime } from './helpers';
 
 /**
  * 发送错误通知给维护人员
@@ -36,7 +16,7 @@ async function sendErrorNotification(env, error = new Error(''), context = '') {
 	const bot = new TelegramBot(env);
 	try {
 		const adminId = config.adminId;
-		const currentTime = await getCurrentTime();
+		const currentTime = getCurrentTime();
 
 		if (adminId) {
 			// Use the 'error' parameter consistently
@@ -60,7 +40,12 @@ async function sendErrorNotification(env, error = new Error(''), context = '') {
 				text: errorMessage,
 			});
 		} else {
-			console.warn('未配置管理 ID，无法发送错误通知:', context, '-', error.message);
+			console.warn(
+				'未配置管理 ID，无法发送错误通知:',
+				context,
+				'-',
+				error.message
+			);
 		}
 	} catch (handlerError) {
 		console.error('发送错误通知时发生内部错误:', handlerError);

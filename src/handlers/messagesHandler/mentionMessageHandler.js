@@ -302,14 +302,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 				// 更新聊天记录，保存 askContents 和回复
 				await updateChatContents(env, chatId, userId, [
 					...askContents,
-					{
-						role: 'model',
-						parts: response.parts
-							.filter((part) => !part.thought)
-							.map((part) => ({
-								text: part.text,
-							})),
-					},
+					response,
 				]);
 			}
 		} catch (apiError) {

@@ -6,7 +6,10 @@
  * @returns {string}  转义后的 HTML 文本
  */
 function escapeHtml(text) {
-	return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	return text
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
 }
 
 /**
@@ -91,4 +94,25 @@ function markdownToHtml(markdownText) {
 	}
 }
 
-export { markdownToHtml };
+/**
+ * 获取当前 UTC+8 时间并格式化
+ * @returns {string} 格式化后的时间字符串 (YYYY-MM-DD HH:mm:ss UTC+8)
+ */
+function getCurrentTime() {
+	const now = new Date();
+	const formatter = new Intl.DateTimeFormat('zh-CN', {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		hour12: false,
+		timeZone: 'Asia/Shanghai',
+	});
+
+	const formattedTime = formatter.format(now).replace(/\//g, '-') + ' UTC+8';
+	return formattedTime;
+}
+
+export { markdownToHtml, getCurrentTime };
