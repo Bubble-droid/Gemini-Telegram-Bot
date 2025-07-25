@@ -1515,8 +1515,16 @@ const toolExecutors = {
 	 */
 	callGithubApi: async (args) => {
 		console.log('执行工具: callGithubApi, 参数:', args);
-		const { path, queryParams, method = 'GET', body } = args;
-		const githubToken = toolExecutors.githubToken;
+		const {
+			path,
+			queryParams,
+			method = 'GET',
+			body,
+			userGithubToken = null,
+		} = args;
+		const githubToken = userGithubToken
+			? userGithubToken
+			: toolExecutors.githubToken;
 		const GITHUB_API_PREFIX = 'https://api.github.com';
 
 		if (!path) {

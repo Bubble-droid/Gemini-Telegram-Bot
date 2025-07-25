@@ -1792,6 +1792,12 @@ const tools = [
 								body: '这是一个通过 API 创建的 Issue。',
 							},
 						},
+						userGithubToken: {
+							type: Type.STRING,
+							description:
+								'可选的 GitHub 用户令牌，用于身份验证，如果用户要求创建 Issue，则必须提供此内容，且令牌需要具备对公共仓库的 Issues 的读写权限。',
+							nullable: true,
+						},
 					},
 					required: ['path'],
 				},

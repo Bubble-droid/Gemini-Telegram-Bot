@@ -57,6 +57,7 @@
 	- `queryParams` (对象, 选填): 可选的查询参数对象，例如 `{ per_page: 10, page: 1 }`。
 	- `method` (字符串, 选填): HTTP 方法，例如 "GET", "POST", "PUT", "DELETE", "PATCH"。默认为 "GET"。
 	- `body` (对象, 选填): 可选的请求体对象，用于 POST, PUT, PATCH 请求。例如，创建 Issue 的请求体：`{ "title": "新 Issue", "body": "这是 Issue 的内容" }`；创建文件：`{ "message": "commit message", "content": "base64编码的文件内容" }`。
+	- `userGithubToken` (字符串, 选填): 可选的 GitHub 用户令牌，用于身份验证，如果用户要求创建 Issue，则必须提供此内容，且令牌需要具备对公共仓库的 Issues 的读写权限。
 
 **注意：如果工具执行出错，必须在回复用户时说明。**
 </tools>
