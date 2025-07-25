@@ -1752,6 +1752,65 @@ const tools = [
 					},
 				},
 			},
+			{
+				name: 'callGithubApi',
+				description:
+					'调用 GitHub 官方 API 中已知存在但工具集中未显式声明的任何 API 方法。此工具支持读取（GET）和写入/修改（POST, PUT, PATCH, DELETE）操作，例如创建或修改 Issue、在有权限的仓库新建或删除文件、推送提交、创建拉取请求等。你需要自行拼接准确的调用 URL，并可选择性地提供查询参数、HTTP 方法和请求体。',
+				behavior: 'BLOCKING',
+				parameters: {
+					type: Type.OBJECT,
+					title: 'Call GitHub API Parameters',
+					properties: {
+						path: {
+							type: Type.STRING,
+							description:
+								'GitHub API 的路径部分，硬编码预设前缀 "https://api.github.com/"。例如，要调用 "https://api.github.com/repos/owner/repo/releases/tags/tag"，则 path 为 "repos/owner/repo/releases/tags/tag"。',
+							example: 'repos/SagerNet/sing-box/issues',
+						},
+						queryParams: {
+							type: Type.OBJECT,
+							description:
+								'可选的查询参数对象，例如 { per_page: 10, page: 1 }。',
+							nullable: true,
+							example: { per_page: 10, page: 1 },
+						},
+						method: {
+							type: Type.STRING,
+							description:
+								'HTTP 方法，例如 "GET", "POST", "PUT", "DELETE", "PATCH"。默认为 "GET"。',
+							default: 'GET',
+							enum: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+							example: 'POST',
+						},
+						body: {
+							type: Type.OBJECT,
+							description:
+								'可选的请求体对象，用于 POST, PUT, PATCH 请求。例如，创建 Issue 的请求体：{ "title": "新 Issue", "body": "这是 Issue 的内容" }；创建文件：{ "message": "commit message", "content": "base64编码的文件内容" }。',
+							nullable: true,
+							example: {
+								title: '新 Issue 标题',
+								body: '这是一个通过 API 创建的 Issue。',
+							},
+						},
+					},
+					required: ['path'],
+				},
+				response: {
+					type: Type.OBJECT,
+					title: 'Call GitHub API Response',
+					properties: {
+						apiResponse: {
+							type: Type.OBJECT,
+							description: 'GitHub API 的完整响应内容。',
+							nullable: true,
+						},
+						error: {
+							type: Type.STRING,
+							description: '如果发生错误，则包含错误信息。',
+						},
+					},
+				},
+			},
 		],
 	},
 ];

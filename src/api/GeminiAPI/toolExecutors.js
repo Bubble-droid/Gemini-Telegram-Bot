@@ -1506,6 +1506,90 @@ const toolExecutors = {
 			};
 		}
 	},
+
+	/**
+	 * 执行 callGithubApi 工具
+	 * 调用 GitHub 已知存在但工具中未声明的 API 方法，让模型自行拼接准确的调用 URL。
+	 * @param {object} args - 工具调用时传递的参数对象，例如 { path: 'repos/owner/repo/releases/tags/tag', queryParams: { per_page: 10 }, method: 'GET', body: { ... } }
+	 * @returns {Promise<object>} - 工具执行结果对象，包含 apiResponse 字段，apiResponse 是 GitHub API 的完整响应内容
+	 */
+	callGithubApi: async (args) => {
+		console.log('执行工具: callGithubApi, 参数:', args);
+		const { path, queryParams, method = 'GET', body } = args;
+		const githubToken = toolExecutors.githubToken;
+		const GITHUB_API_PREFIX = 'https://api.github.com';
+
+		if (!path) {
+			console.warn('callGithubApi 工具调用参数无效: 缺少 path。');
+			return { error: 'callGithubApi 工具调用参数无效，缺少 API 路径。' };
+		}
+
+		if (!githubToken) {
+			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
+			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
+		}
+
+		// 构建完整的 API URL，确保 path 不以斜杠开头
+		let apiUrl = `${GITHUB_API_PREFIX}/${
+			path.startsWith('/') ? path.substring(1) : path
+		}`;
+
+		// 拼接查询参数
+		if (queryParams && Object.keys(queryParams).length > 0) {
+			const queryString = new URLSearchParams(queryParams).toString();
+			apiUrl = `${apiUrl}?${queryString}`;
+		}
+
+		try {
+			console.log(
+				`尝试通过 GitHub API 调用: ${method.toUpperCase()} ${apiUrl}`
+			);
+			const fetchOptions = {
+				method: method.toUpperCase(), // 确保方法为大写
+				headers: {
+					Accept: 'application/vnd.github+json', // 推荐使用此 Accept 头
+					Authorization: `Bearer ${githubToken}`,
+					'User-Agent': 'Gemini-Telegram-Bot', // GitHub API 要求 User-Agent
+				},
+			};
+
+			// 如果是 POST, PUT, PATCH 请求，添加 Content-Type 和请求体
+			if (
+				body &&
+				(method.toUpperCase() === 'POST' ||
+					method.toUpperCase() === 'PUT' ||
+					method.toUpperCase() === 'PATCH')
+			) {
+				fetchOptions.headers['Content-Type'] = 'application/json';
+				fetchOptions.body = JSON.stringify(body); // 将请求体转换为 JSON 字符串
+			}
+
+			const response = await fetch(apiUrl, fetchOptions);
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.warn(
+					`GitHub API 调用失败，状态码: ${response.status}, 错误: ${errorText}, URL: ${apiUrl}`
+				);
+				return {
+					error: `GitHub API 调用失败 (状态码: ${response.status}) - ${errorText}`,
+				};
+			}
+
+			const apiResponse = await response.json();
+			console.log(`callGithubApi 工具执行完毕，成功获取 API 响应。`);
+			return { apiResponse };
+		} catch (fetchError) {
+			console.error(
+				`GitHub API 调用时发生网络错误: ${fetchError}, URL: ${apiUrl}`
+			);
+			return {
+				error: `GitHub API 调用时发生网络错误 - ${
+					fetchError.message || '未知错误'
+				}`,
+			};
+		}
+	},
 };
 
 export default toolExecutors;
