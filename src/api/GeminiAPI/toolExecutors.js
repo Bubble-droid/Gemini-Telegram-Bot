@@ -48,7 +48,7 @@ const toolExecutors = {
 							);
 							assetsContent.push({
 								path: asset,
-								content: `错误：无法获取文件内容 (状态码: ${response.status})`,
+								error: `无法获取文件内容 (状态码: ${response.status})`,
 								identifier: assetIdentifier,
 							});
 							continue; // 继续处理下一个文档
@@ -75,7 +75,7 @@ const toolExecutors = {
 						);
 						assetsContent.push({
 							path: asset,
-							content: `错误：获取文件时发生网络错误 - ${
+							error: `获取文件时发生网络错误 - ${
 								fetchError.message || '未知错误'
 							}`,
 							identifier: assetIdentifier,
@@ -90,8 +90,7 @@ const toolExecutors = {
 				assets: [
 					{
 						path: '',
-						content:
-							'错误：getAssetsContent 工具调用参数无效，未提供文件路径。',
+						error: '错误：getAssetsContent 工具调用参数无效，未提供文件路径。',
 						identifier: 'invalid_args',
 					},
 				],
@@ -120,11 +119,6 @@ const toolExecutors = {
 				error:
 					'searchFilesByKeyword 工具调用参数无效，缺少关键词、仓库所有者或仓库名称。',
 			};
-		}
-
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索。' };
 		}
 
 		// 构建 GitHub API 搜索 URL，包含 branch 参数
@@ -200,11 +194,6 @@ const toolExecutors = {
 			};
 		}
 
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
-		}
-
 		// 确保 path 不以斜杠开头，如果 path 为空则不需要处理
 		const cleanedPath = path.startsWith('/') ? path.substring(1) : path;
 		const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${cleanedPath}${
@@ -256,7 +245,7 @@ const toolExecutors = {
 			);
 			return {
 				error: `GitHub API 列出目录内容时发生网络错误 - ${
-					fetchError.message || '未知错误'
+					fetchError.message || fetchError
 				}`,
 			};
 		}
@@ -277,11 +266,6 @@ const toolExecutors = {
 			return {
 				error: 'listRepoTree 工具调用参数无效，缺少仓库所有者或仓库名称。',
 			};
-		}
-
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
 		}
 
 		try {
@@ -360,7 +344,7 @@ const toolExecutors = {
 			);
 			return {
 				error: `GitHub API 列出仓库文件树时发生网络错误 - ${
-					fetchError.message || '未知错误'
+					fetchError.message || fetchError
 				}`,
 			};
 		}
@@ -476,11 +460,6 @@ const toolExecutors = {
 			};
 		}
 
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
-		}
-
 		// 构建 GitHub API 提交记录 URL
 		let apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?${
 			branch ? `sha=${branch}&` : ''
@@ -556,11 +535,6 @@ const toolExecutors = {
 			return {
 				error: 'getRepoReleases 工具调用参数无效，缺少仓库所有者或仓库名称。',
 			};
-		}
-
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
 		}
 
 		// 构建 GitHub API 发布版本 URL，包含 per_page 和 page 参数
@@ -652,11 +626,6 @@ const toolExecutors = {
 				error:
 					'getReleaseDetails 工具调用参数无效，必须提供 release_id 或 tag_name。',
 			};
-		}
-
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
 		}
 
 		let apiUrl = '';
@@ -784,11 +753,6 @@ const toolExecutors = {
 				error:
 					'getCommitDetails 工具调用参数无效，缺少仓库所有者、仓库名称或提交 SHA。',
 			};
-		}
-
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
 		}
 
 		const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits/${commit_sha}`;
@@ -967,11 +931,6 @@ const toolExecutors = {
 			};
 		}
 
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
-		}
-
 		// 构建 GitHub API URL，根据 userOrOrg 是用户还是组织来确定前缀
 		const apiUrl = `https://api.github.com/users/${userOrOrg}/repos?type=${type}&sort=${sort}&direction=${direction}`;
 
@@ -1055,11 +1014,6 @@ const toolExecutors = {
 			};
 		}
 
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
-		}
-
 		const apiUrl = `https://api.github.com/repos/${owner}/${repo}/branches`;
 
 		try {
@@ -1129,11 +1083,6 @@ const toolExecutors = {
 			return {
 				error: 'searchGithubRepos 工具调用参数无效，缺少关键词。',
 			};
-		}
-
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
 		}
 
 		// 构建 GitHub API 搜索仓库 URL
@@ -1243,11 +1192,6 @@ const toolExecutors = {
 			};
 		}
 
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索 Issue。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索 Issue。' };
-		}
-
 		// 构建 GitHub API 搜索 Issue 的 URL (全局搜索)
 		// q=keyword+is:issue
 		const query = `${encodeURIComponent(keyword)}+is:issue`;
@@ -1343,11 +1287,6 @@ const toolExecutors = {
 			};
 		}
 
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索 Issue。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API 搜索 Issue。' };
-		}
-
 		// 构建 GitHub API 搜索 Issue 的 URL
 		// q=keyword+repo:owner/repo+is:issue
 		const query = `${encodeURIComponent(
@@ -1441,15 +1380,6 @@ const toolExecutors = {
 			};
 		}
 
-		if (!githubToken) {
-			console.error(
-				'GITHUB_TOKEN 未配置，无法执行 GitHub API 获取 Issue 评论。'
-			);
-			return {
-				error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API 获取 Issue 评论。',
-			};
-		}
-
 		// 构建 GitHub API 获取 Issue 评论的 URL
 		const apiUrl = `https://api.github.com/repos/${owner}/${repo}/issues/${issue_number}/comments?per_page=${per_page}&page=${page}`;
 
@@ -1525,16 +1455,12 @@ const toolExecutors = {
 		const githubToken = userGithubToken
 			? userGithubToken
 			: toolExecutors.githubToken;
+
 		const GITHUB_API_PREFIX = 'https://api.github.com';
 
 		if (!path) {
 			console.warn('callGithubApi 工具调用参数无效: 缺少 path。');
 			return { error: 'callGithubApi 工具调用参数无效，缺少 API 路径。' };
-		}
-
-		if (!githubToken) {
-			console.error('GITHUB_TOKEN 未配置，无法执行 GitHub API。');
-			return { error: 'GITHUB_TOKEN 未配置，无法执行 GitHub API。' };
 		}
 
 		// 构建完整的 API URL，确保 path 不以斜杠开头
