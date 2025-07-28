@@ -4,6 +4,7 @@ wrangler.jsonc
 .roo/
 .vscode/
 draft/
+secret/
 Gemini-Telegram-Bot.code-workspace
 
 # Logs
