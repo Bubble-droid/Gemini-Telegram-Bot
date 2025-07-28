@@ -446,7 +446,7 @@ const toolExecutors = {
 			repo,
 			branch = 'main',
 			path = '',
-			per_page = 10,
+			per_page = 20,
 			page = 1,
 		} = args;
 		const githubToken = toolExecutors.githubToken;

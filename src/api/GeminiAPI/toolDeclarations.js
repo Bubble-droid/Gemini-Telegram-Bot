@@ -444,11 +444,11 @@ const tools = [
 						},
 						per_page: {
 							type: Type.NUMBER,
-							description: '每页返回的提交数量，默认为 10，最大 100。',
-							default: 10,
+							description: '每页返回的提交数量，默认为 20，最大 100。',
+							default: 20,
 							minimum: 1,
 							maximum: 100,
-							example: 10,
+							example: 20,
 						},
 						page: {
 							type: Type.NUMBER,
