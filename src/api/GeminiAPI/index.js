@@ -28,7 +28,7 @@ class GeminiApi {
 		this.toolExecutors = toolExecutors;
 		this.toolExecutors.env = env;
 		this.toolExecutors.githubToken = config.githubToken; // 将 githubToken 传递给工具执行器
-		this.MAX_TOOL_CALL_ROUNDS = 10; // 最大工具调用轮次
+		this.MAX_TOOL_CALL_ROUNDS = 12; // 最大工具调用轮次
 	}
 
 	/**
