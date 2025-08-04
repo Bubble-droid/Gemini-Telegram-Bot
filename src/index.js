@@ -21,13 +21,6 @@ export default {
 				return await webhookHandler(request, env, ctx);
 			} else if (url.pathname === '/' || url.pathname === '') {
 				return new Response('This is Working...', { status: 200 });
-			} else if (url.pathname === '/robots.txt') {
-				return new Response('User-agent: *\nDisallow: /', {
-					headers: {
-						'Content-Type': 'text/plain',
-					},
-					status: 200,
-				});
 			}
 		} catch (error) {
 			console.error('Error:', error.message || error);
