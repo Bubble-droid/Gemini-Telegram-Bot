@@ -89,8 +89,9 @@ class GeminiApi {
 				});
 
 				totalToken =
-					usageMetadata.totalTokenCount && !isNaN(usageMetadata.totalTokenCount)
-						? totalToken + usageMetadata.totalTokenCount
+					response.usageMetadata.totalTokenCount &&
+					!isNaN(response.usageMetadata.totalTokenCount)
+						? totalToken + response.usageMetadata.totalTokenCount
 						: totalToken;
 
 				console.log(`Gemini API 响应: ${JSON.stringify(response, null, 2)}`);
