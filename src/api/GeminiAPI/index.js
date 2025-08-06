@@ -72,6 +72,7 @@ class GeminiApi {
 
 		let totalToken = 0;
 		// 循环处理，直到 API 返回最终回复而不是工具调用
+		let hasThoughts = false;
 		for (
 			let callCount = 0;
 			callCount < this.MAX_TOOL_CALL_ROUNDS;
@@ -138,6 +139,7 @@ class GeminiApi {
 								.trim() || '';
 
 						if (thoughtTexts) {
+							hasThoughts = hasThoughts ? hasThoughts : true;
 							this.bot.editMessageText(
 								{
 									chat_id: this.chatId,
@@ -257,6 +259,7 @@ class GeminiApi {
 								role: 'model',
 								parts: textParts,
 							},
+							hasThoughts,
 							callCount: callCount + 1,
 							retryCount,
 							totalToken,

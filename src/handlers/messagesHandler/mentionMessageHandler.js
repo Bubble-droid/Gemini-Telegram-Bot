@@ -247,7 +247,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 			thinkMessageId,
 		});
 		try {
-			const { response, callCount, retryCount, totalToken } =
+			const { response, hasThoughts, callCount, retryCount, totalToken } =
 				await geminiApi.generateContent(contents);
 
 			const thoughtTexts =
@@ -258,6 +258,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 					.trim() || '';
 
 			if (thoughtTexts) {
+				hasThoughts = hasThoughts ? hasThoughts : true;
 				await bot.editMessageText(
 					{
 						chat_id: chatId,
@@ -274,6 +275,13 @@ async function handleMentionMessage(message, env, isChat = false) {
 					},
 					false
 				);
+			}
+
+			if (!hasThoughts) {
+				await bot.deleteMessage({
+					chat_id: chatId,
+					message_id: thinkMessageId,
+				});
 			}
 
 			const resTexts =
