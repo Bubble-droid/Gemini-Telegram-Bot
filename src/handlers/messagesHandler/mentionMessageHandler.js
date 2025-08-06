@@ -291,7 +291,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 				throw new Error('Gemini API 未返回有效回复：未知原因，请稍后再试。');
 			}
 
-			const fullText = `🤖 \`${config.modelName}\`\n\n${resTexts}\n\n✨ 本次处理共调用 ${callCount} 次 Gemini API（${retryCount} 次出错重试），总消耗 ${totalToken} 个 Token\n\n*⚠️ AI 的回答无法保证百分百准确，请自行判断！*`;
+			const fullText = `🤖 \`${config.modelName}\`\n\n${resTexts}\n\n*✨ 本次处理共调用 ${callCount} 次 Gemini API（${retryCount} 次出错重试），总消耗 ${totalToken} 个 Token*\n\n*⚠️ AI 的回答无法保证百分百准确，请自行判断！*`;
 
 			const { ok, error: sendError } = await sendFormattedMessage(
 				env,
