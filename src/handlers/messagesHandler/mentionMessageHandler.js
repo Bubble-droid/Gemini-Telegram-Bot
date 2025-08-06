@@ -250,34 +250,36 @@ async function handleMentionMessage(message, env, isChat = false) {
 			const { response, hasThoughts, callCount, retryCount, totalToken } =
 				await geminiApi.generateContent(contents);
 
-			const thoughtTexts =
+			const resThoughtTexts =
 				response.parts
 					.filter((part) => part.thought)
 					.map((part) => part.text)
 					.join('')
 					.trim() || '';
 
-			if (thoughtTexts) {
-				hasThoughts = hasThoughts ? hasThoughts : true;
+			let hasResThoughts = false;
+
+			if (resThoughtTexts) {
+				hasResThoughts = true;
 				await bot.editMessageText(
 					{
 						chat_id: chatId,
 						message_id: thinkMessageId,
 						text: `Thoughts:\n\n<blockquote expandable>${(() => {
-							const strArr = Array.from(thoughtTexts);
+							const strArr = Array.from(resThoughtTexts);
 							if (strArr.length > 4096) {
 								return `${strArr.slice(0, 2000).join('')}\n\n......\n\n${strArr
 									.slice(strArr.length - 2000)
 									.join('')}`.trim();
 							}
-							return thoughtTexts;
+							return resThoughtTexts;
 						})()}</blockquote>`,
 					},
 					false
 				);
 			}
 
-			if (!hasThoughts) {
+			if (!hasThoughts && !hasResThoughts) {
 				await bot.deleteMessage({
 					chat_id: chatId,
 					message_id: thinkMessageId,
