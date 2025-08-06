@@ -241,9 +241,14 @@ async function handleMentionMessage(message, env, isChat = false) {
 			await scheduleDeletion(env, chatId, thinkMessageId, 30 * 60 * 1_000);
 		}
 
-		const geminiApi = new GeminiApi(env, { chatId, thinkMessageId });
+		const geminiApi = new GeminiApi(env, {
+			chatId,
+			replyToMessageId,
+			thinkMessageId,
+		});
 		try {
-			const response = await geminiApi.generateContent(contents);
+			const { response, callCount, retryCount, totalToken } =
+				await geminiApi.generateContent(contents);
 
 			const thoughtTexts =
 				response.parts
@@ -253,7 +258,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 					.trim() || '';
 
 			if (thoughtTexts) {
-				bot.editMessageText(
+				await bot.editMessageText(
 					{
 						chat_id: chatId,
 						message_id: thinkMessageId,
@@ -278,14 +283,15 @@ async function handleMentionMessage(message, env, isChat = false) {
 					.join('')
 					.trim() || '';
 
-			if (!resTexts && !thoughtTexts) {
-				console.log('Gemini API returned empty response.');
-				throw new Error('Gemini API returned an empty response.');
-			} else if (!resTexts) {
+			if (!resTexts) {
+				await bot.deleteMessage({
+					chat_id: chatId,
+					message_id: thinkMessageId,
+				});
 				throw new Error('Gemini API 未返回有效回复：未知原因，请稍后再试。');
 			}
 
-			const fullText = `${resTexts}\n\n*⚠️ AI 的回答无法保证百分百准确，请自行判断！*`;
+			const fullText = `🤖 \`${config.modelName}\`\n\n${resTexts}\n\n✨ 本次处理共调用 ${callCount} 次 Gemini API（${retryCount} 次出错重试），总消耗 ${totalToken} 个 Token\n\n*⚠️ AI 的回答无法保证百分百准确，请自行判断！*`;
 
 			const { ok, error: sendError } = await sendFormattedMessage(
 				env,
@@ -306,6 +312,10 @@ async function handleMentionMessage(message, env, isChat = false) {
 				]);
 			}
 		} catch (apiError) {
+			await bot.deleteMessage({
+				chat_id: chatId,
+				message_id: thinkMessageId,
+			});
 			throw apiError;
 		}
 	} catch (error) {

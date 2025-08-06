@@ -23,7 +23,8 @@ class GeminiApi {
 		this.systemPromptKey = 'system_prompt';
 		this.env = env;
 		this.chatId = params.chatId;
-		this.messageId = params.thinkMessageId;
+		this.replyToMessageId = params.replyToMessageId;
+		this.thinkMessageId = params.thinkMessageId;
 		this.tools = tools;
 		this.toolExecutors = toolExecutors;
 		this.toolExecutors.env = env;
@@ -65,12 +66,18 @@ class GeminiApi {
 			],
 		};
 
-		const MAX_RETRIES = 3; // 定义最大重试次数
-		let retryCount = 0; // 初始化重试计数
+		const MAX_RETRIES = 3;
+		const BASE_DELAY = 10_000;
+		let retryCount = 0;
 
+		let totalToken = 0;
 		// 循环处理，直到 API 返回最终回复而不是工具调用
-		for (let i = 0; i < this.MAX_TOOL_CALL_ROUNDS; i++) {
-			console.log(`API 调用轮次: ${i + 1}, 重试次数: ${retryCount}`);
+		for (
+			let callCount = 0;
+			callCount < this.MAX_TOOL_CALL_ROUNDS;
+			callCount++
+		) {
+			console.log(`API 调用轮次: ${callCount + 1}, 重试次数: ${retryCount}`);
 			console.log('当前发送的 contents:', JSON.stringify(contents, null, 2)); // 打印完整的 contents 可能非常长，谨慎使用
 
 			try {
@@ -80,6 +87,11 @@ class GeminiApi {
 					config: baseConfig,
 					contents: contents,
 				});
+
+				totalToken =
+					usageMetadata.totalTokenCount && !isNaN(usageMetadata.totalTokenCount)
+						? totalToken + usageMetadata.totalTokenCount
+						: totalToken;
 
 				console.log(`Gemini API 响应: ${JSON.stringify(response, null, 2)}`);
 
@@ -91,9 +103,19 @@ class GeminiApi {
 						JSON.stringify(response, null, 2)
 					);
 					if (retryCount < MAX_RETRIES) {
-						retryCount++;
+						retryCount += 1;
+						let delay = Math.floor(
+							BASE_DELAY * 2 ** retryCount * (0.8 + Math.random() * 0.4)
+						);
+						await this.bot.editMessageText({
+							chat_id: this.chatId,
+							message_id: this.thinkMessageId,
+							text: `Gemini API 响应为空，，将在 ${Math.floor(
+								delay / 1000
+							)} 秒后，进行第 ${retryCount} 次重试...`,
+						});
 						console.log(`Gemini API 响应为空，进行第 ${retryCount} 次重试...`);
-						await new Promise((resolve) => setTimeout(resolve, 10 * 1_000));
+						await new Promise((resolve) => setTimeout(resolve, delay));
 						continue;
 					} else {
 						throw new Error(
@@ -101,9 +123,6 @@ class GeminiApi {
 						);
 					}
 				}
-
-				// 重置重试计数，因为成功获取到有效响应
-				retryCount = 0;
 
 				const parts = candidate.content?.parts || [];
 				const functionCalls = parts.filter((part) => part.functionCall);
@@ -121,7 +140,7 @@ class GeminiApi {
 							this.bot.editMessageText(
 								{
 									chat_id: this.chatId,
-									message_id: this.messageId,
+									message_id: this.thinkMessageId,
 									text: `Thoughts:\n\n<blockquote expandable>${(() => {
 										const strArr = Array.from(thoughtTexts);
 										if (strArr.length > 4096) {
@@ -233,8 +252,13 @@ class GeminiApi {
 						);
 						// 返回完整的响应对象，符合最终回复格式
 						return {
-							role: 'model',
-							parts: textParts,
+							response: {
+								role: 'model',
+								parts: textParts,
+							},
+							callCount: callCount + 1,
+							retryCount,
+							totalToken,
 						};
 					} else {
 						// 如果既没有工具调用也没有文本回复
