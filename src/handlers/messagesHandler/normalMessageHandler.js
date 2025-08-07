@@ -17,9 +17,16 @@ async function handleNormalMessage(message, env) {
 		const config = getConfig(env);
 		const botName = config.botName.replace('@', '').trim();
 		if (message.reply_to_message.from.username === botName) {
-			message.reply_to_message.text = message.reply_to_message.text
-				.replace('⚠️ AI 的回答无法保证百分百准确，请自行判断！', '')
-				.trim();
+			const replyToMessageTexts = message.reply_to_message?.text;
+			if (replyToMessageTexts.startsWith('🤖 模型：')) {
+				const regex =
+					/🤖 模型：`[^`]+`\r?\n\r?\n([\s\S]*?)\r?\n\r?\n\*✨ 本次任务共调用/;
+				const match = replyToMessageTexts.match(regex);
+				if (match) {
+					const cleanMessageTexts = match[1];
+					message.reply_to_message.text = cleanMessageTexts.trim();
+				}
+			}
 			await handleMentionMessage(message, env, true);
 		}
 	} catch (error) {

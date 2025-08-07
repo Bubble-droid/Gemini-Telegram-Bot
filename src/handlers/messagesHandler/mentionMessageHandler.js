@@ -308,11 +308,11 @@ async function handleMentionMessage(message, env, isChat = false) {
 
 			const fullText = `🤖 模型：\`${config.modelName}\`
 
-			${resTexts}
+${resTexts}
 
-			*✨ 本次任务共调用 Gemini API ${callCount} 次（含 ${retryCount} 次错误重试），使用工具数：${usageToolCount}，耗时：${totalDuration} 秒，消耗 Token：${totalToken}*
+*✨ 本次任务共调用 Gemini API ${callCount} 次（含 ${retryCount} 次错误重试），使用工具数：${usageToolCount}，耗时：${totalDuration} 秒，消耗 Token：${totalToken}*
 
-			*⚠ 本 AI 回答仅供参考，可能存在不准确之处，请您自行判断。*`;
+*⚠ 本 AI 回答仅供参考，可能存在不准确之处，请您自行判断。*`;
 
 			const { ok, error: sendError } = await sendFormattedMessage(
 				env,
