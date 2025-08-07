@@ -22,9 +22,9 @@ async function updateChatContents(env, chatId, userId, askContents) {
 
 	try {
 		// 尝试从 KV 读取对话历史
-		let contents = JSON.parse(await kvRead(kvNamespace, key)) || [];
+		let contents = (await kvRead(kvNamespace, key, { type: 'json' })) || [];
 		let compressContents =
-			JSON.parse(await kvRead(kvNamespace, keyCompress)) || [];
+			(await kvRead(kvNamespace, keyCompress, { type: 'json' })) || [];
 		contents.push(...askContents);
 		// 如果历史记录长度超过最大限制，则从开头删除最旧的消息
 		if (contents.length > config.maxContentsLength) {

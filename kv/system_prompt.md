@@ -207,51 +207,56 @@
 
 - **怎么在 GUI.for.Cores 客户端（导入/使用）自己的（远程/本地）配置文件运行内核？**: GUI.for.Cores 客户端本身不支持直接导入完整的配置文件，不过 `GUI.for.Clash` 做了兼容性处理， `GUI.for.SingBox` 更得益于其强大的脚本功能，可以通过脚本或者插件来实现类似效果。
   - `GUI.for.Clash`: 在添加远程或者本地订阅时，启用 `使用订阅内的策略组和分流规则`，将会自动生成一个包含远程订阅/本地文件内自带`策略组`与`分流规则`的配置。
-	- `GUI.for.SingBox`: 这里将使用配置脚本来实现自定义配置的“导入”。
-	  - 在 `配置设置` -> `混入和脚本` -> `脚本操作` 中添加以下示例脚本：
-		  请将示例脚本中的文件路径、文件 URL 等内容按照实际需求进行修改。
-		  - “导入”本地配置文件：
-			  ```javascript
-				const onGenerate = async (config) => {
-					// 从本地文件中导入并解析 sing-box 配置
-					const _config = JSON.parse(await Plugins.Readfile('PATH/TO/config.json'))
-					// 对配置做出修改
-					_config.inbounds.forEach((v) => {
-						if (v.tag === 'tun-in') {
-							v.auto_redirect = true
-							v.route_exclude_address_set = 'geoip-cn'
-						}
-					})
-					// 确保 Clash API 与 GUI 配置保持一致
-					_config.experimental.external_controller = config.experimental.external_controller
-					_config.experimental.secret = config.experimental.secret
-					// 返回修改后的配置
-					return _config
-				}
-			  ```
-			- “导入”远程配置文件：
-			  ```javascript
-				const onGenerate = async (config) => {
-					// 从远程 URL 导入并解析 sing-box 配置
-					// 此方法需要你的远程订阅或者配置文件支持 sing-box 的原生格式。
-					const _config = JSON.parse(await Plugins.HttpGet(
-						'https://example.com/config.json',
-						{'User-Agent': 'sing-box'}
-					))
-					// 对配置做出修改
-					_config.inbounds.forEach((v) => {
-						if (v.tag === 'tun-in') {
-							v.auto_redirect = true
-							v.route_exclude_address_set = 'geoip-cn'
-						}
-					})
-					// 确保 Clash API 与 GUI 配置保持一致
-					_config.experimental.external_controller = config.experimental.external_controller
-					_config.experimental.secret = config.experimental.secret
-					// 返回修改后的配置
-					return _config
-				}
-				```
+  - `GUI.for.SingBox`: 这里将使用配置脚本来实现自定义配置的“导入”。
+    - 在 `配置设置` -> `混入和脚本` -> `脚本操作` 中添加以下示例脚本：
+      请将示例脚本中的文件路径、文件 URL 等内容按照实际需求进行修改。
+      - “导入”本地配置文件：
+        ```javascript
+        const onGenerate = async (config) => {
+        	// 从本地文件中导入并解析 sing-box 配置
+        	const _config = JSON.parse(
+        		await Plugins.Readfile('PATH/TO/config.json')
+        	);
+        	// 对配置做出修改
+        	_config.inbounds.forEach((v) => {
+        		if (v.tag === 'tun-in') {
+        			v.auto_redirect = true;
+        			v.route_exclude_address_set = 'geoip-cn';
+        		}
+        	});
+        	// 确保 Clash API 与 GUI 配置保持一致
+        	_config.experimental.external_controller =
+        		config.experimental.external_controller;
+        	_config.experimental.secret = config.experimental.secret;
+        	// 返回修改后的配置
+        	return _config;
+        };
+        ```
+      - “导入”远程配置文件：
+        ```javascript
+        const onGenerate = async (config) => {
+        	// 从远程 URL 导入并解析 sing-box 配置
+        	// 此方法需要你的远程订阅或者配置文件支持 sing-box 的原生格式。
+        	const _config = JSON.parse(
+        		await Plugins.HttpGet('https://example.com/config.json', {
+        			'User-Agent': 'sing-box',
+        		})
+        	);
+        	// 对配置做出修改
+        	_config.inbounds.forEach((v) => {
+        		if (v.tag === 'tun-in') {
+        			v.auto_redirect = true;
+        			v.route_exclude_address_set = 'geoip-cn';
+        		}
+        	});
+        	// 确保 Clash API 与 GUI 配置保持一致
+        	_config.experimental.external_controller =
+        		config.experimental.external_controller;
+        	_config.experimental.secret = config.experimental.secret;
+        	// 返回修改后的配置
+        	return _config;
+        };
+        ```
 
 #### TUN 模式常见问题
 

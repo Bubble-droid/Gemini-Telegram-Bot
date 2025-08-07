@@ -6,6 +6,7 @@ import kvRead from '../../kvManager/kvRead';
 import tools from './toolDeclarations';
 import toolExecutors from './toolExecutors';
 import TelegramBot from '../TelegramBot';
+import { rotateApiKey } from '../../utils/helpers';
 
 /**
  * 封装 Gemini API 调用逻辑
@@ -16,7 +17,6 @@ class GeminiApi {
 	 */
 	constructor(env, params) {
 		const config = getConfig(env);
-		this.genai = new GoogleGenAI({ apiKey: config.apiKey });
 		this.bot = new TelegramBot(env);
 		this.model = config.modelName;
 		this.botConfigKv = config.botConfigKv;
@@ -40,8 +40,9 @@ class GeminiApi {
 	async generateContent(initialContents) {
 		if (!initialContents || !Array.isArray(initialContents)) return null;
 		const systemPrompt =
-			(await kvRead(this.botConfigKv, this.systemPromptKey)) ||
-			'You are a helpful assistant.';
+			(await kvRead(this.botConfigKv, this.systemPromptKey, {
+				type: 'text',
+			})) || 'You are a helpful assistant.';
 
 		console.log(`systemPrompt: ${systemPrompt.slice(0, 200)}...`);
 
@@ -85,8 +86,12 @@ class GeminiApi {
 			console.log(`API 调用轮次: ${callCount}, 重试次数: ${retryCount}`);
 			console.log('当前发送的 contents:', JSON.stringify(contents, null, 2)); // 打印完整的 contents 可能非常长，谨慎使用
 			try {
+				const { apiKey, apiKeyId } = await rotateApiKey(this.env);
+				const ai = new GoogleGenAI({ apiKey: apiKey });
+				console.log(`当前使用的 API 密钥: ${apiKeyId}`);
+
 				console.log('发送 Gemini API 请求...');
-				const response = await this.genai.models.generateContent({
+				const response = await ai.models.generateContent({
 					model: this.model,
 					config: baseConfig,
 					contents: contents,

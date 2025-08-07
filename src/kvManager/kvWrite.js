@@ -5,7 +5,7 @@
  * @param {KVNamespace} kvNamespace - KV Namespace 绑定
  * @param {string} key - 要写入的键
  * @param {any} value - 要写入的值
- * @param {object} [options={}] - 可选参数 (如 expirationTtl)
+ * @param {object} options - 可选参数，如 TTL
  * @returns {Promise<void>}
  */
 async function kvWrite(kvNamespace, key, value, options = {}) {

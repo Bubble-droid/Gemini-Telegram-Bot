@@ -19,9 +19,9 @@ async function getChatContents(env, chatId, userId) {
 	const keyCompress = `contents_${chatId}_${userId}_compress`;
 	try {
 		// kvRead 已经处理了键不存在的情况，返回 null
-		let contents = JSON.parse(await kvRead(kvNamespace, key)) || [];
+		let contents = (await kvRead(kvNamespace, key, { type: 'json' })) || [];
 		let compressContents =
-			JSON.parse(await kvRead(kvNamespace, keyCompress)) || [];
+			(await kvRead(kvNamespace, keyCompress, { type: 'json' })) || [];
 		if (compressContents.length > 0) {
 			const formatCompressContents = compressContents.map((c) => ({
 				role: 'user',

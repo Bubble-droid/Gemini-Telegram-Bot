@@ -1,5 +1,9 @@
 // src/utils/helpers.js
 
+import getConfig from '../env';
+import kvRead from '../kvManager/kvRead';
+import kvWrite from '../kvManager/kvWrite';
+
 /**
  * HTML 字符转义 -  精简版本，仅转义 Telegram HTML 必需字符
  * @param {string} text  要转义的文本
@@ -115,4 +119,38 @@ function getCurrentTime() {
 	return formattedTime;
 }
 
-export { markdownToHtml, getCurrentTime };
+/**
+ * API 密钥轮换
+ * @param {Object} env - 环境对象
+ * @returns {Promise<{apiKey: string, apiKeyId: string}>} 轮换后选定的 API 密钥和 ID
+ */
+async function rotateApiKey(env) {
+	const config = getConfig(env);
+	// 1. 从 KV 读取密钥集数组
+	const currentKeys = await kvRead(config.botConfigKv, 'gemini_api_keys', {
+		type: 'json',
+	});
+
+	// 2. 向左轮换一次
+	const rotatedKeys = [...currentKeys]; // 创建一个副本进行操作
+	const firstKey = rotatedKeys.shift(); // 移除第一个元素
+	rotatedKeys.push(firstKey); // 将其添加到数组末尾
+
+	// 3. 选择轮换后的第一个密钥
+	const [selectedApiKey, selectedApiKeyId] = rotatedKeys[0];
+
+	// 4. 将轮换后的数据写入 KV
+	await kvWrite(
+		config.botConfigKv,
+		'gemini_api_keys',
+		JSON.stringify(rotatedKeys)
+	);
+
+	// 5. 返回选择的密钥以及 ID
+	return {
+		apiKey: selectedApiKey,
+		apiKeyId: selectedApiKeyId,
+	};
+}
+
+export { markdownToHtml, getCurrentTime, rotateApiKey };
