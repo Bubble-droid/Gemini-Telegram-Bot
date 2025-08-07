@@ -70,17 +70,20 @@ class GeminiApi {
 		const BASE_DELAY = 10_000;
 		let retryCount = 0;
 
+		let callCount = 0;
 		let totalToken = 0;
-		// 循环处理，直到 API 返回最终回复而不是工具调用
-		let hasThoughts = false;
-		for (
-			let callCount = 0;
-			callCount < this.MAX_TOOL_CALL_ROUNDS;
-			callCount++
-		) {
-			console.log(`API 调用轮次: ${callCount + 1}, 重试次数: ${retryCount}`);
-			console.log('当前发送的 contents:', JSON.stringify(contents, null, 2)); // 打印完整的 contents 可能非常长，谨慎使用
+		let usageToolCount = 0;
 
+		const startTime = Date.now();
+		let totalDuration = 0;
+
+		let hasThoughts = false;
+
+		// 循环处理，直到 API 返回最终回复而不是工具调用
+		for (let i = 0; i < this.MAX_TOOL_CALL_ROUNDS; i++) {
+			callCount++;
+			console.log(`API 调用轮次: ${callCount}, 重试次数: ${retryCount}`);
+			console.log('当前发送的 contents:', JSON.stringify(contents, null, 2)); // 打印完整的 contents 可能非常长，谨慎使用
 			try {
 				console.log('发送 Gemini API 请求...');
 				const response = await this.genai.models.generateContent({
@@ -105,10 +108,10 @@ class GeminiApi {
 						JSON.stringify(response, null, 2)
 					);
 					if (retryCount < MAX_RETRIES) {
-						retryCount += 1;
-						let delay = Math.floor(
-							BASE_DELAY * 2 ** retryCount * (0.8 + Math.random() * 0.4)
+						const delay = Math.floor(
+							BASE_DELAY * Math.pow(2, retryCount) * (0.8 + Math.random() * 0.4)
 						);
+						retryCount++;
 						await this.bot.editMessageText({
 							chat_id: this.chatId,
 							message_id: this.thinkMessageId,
@@ -130,6 +133,7 @@ class GeminiApi {
 				const functionCalls = parts.filter((part) => part.functionCall);
 
 				if (functionCalls.length > 0) {
+					usageToolCount += functionCalls.length;
 					const functionTexts = parts.filter((part) => part.text) || [];
 					if (functionTexts.length > 0) {
 						const thoughtTexts =
@@ -253,6 +257,8 @@ class GeminiApi {
 						console.log(
 							`Gemini API request successful, returning text response.`
 						);
+						const finishedTime = Date.now();
+						totalDuration = Math.round((finishedTime - startTime) / 1000);
 						// 返回完整的响应对象，符合最终回复格式
 						return {
 							response: {
@@ -260,9 +266,11 @@ class GeminiApi {
 								parts: textParts,
 							},
 							hasThoughts,
-							callCount: callCount + 1,
+							callCount,
 							retryCount,
 							totalToken,
+							usageToolCount,
+							totalDuration,
 						};
 					} else {
 						// 如果既没有工具调用也没有文本回复

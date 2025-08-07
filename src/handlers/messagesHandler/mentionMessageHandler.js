@@ -245,8 +245,15 @@ async function handleMentionMessage(message, env, isChat = false) {
 			thinkMessageId,
 		});
 		try {
-			const { response, hasThoughts, callCount, retryCount, totalToken } =
-				await geminiApi.generateContent(contents);
+			const {
+				response,
+				hasThoughts,
+				callCount,
+				retryCount,
+				totalToken,
+				usageToolCount,
+				totalDuration,
+			} = await geminiApi.generateContent(contents);
 
 			const resThoughtTexts =
 				response.parts
@@ -299,7 +306,13 @@ async function handleMentionMessage(message, env, isChat = false) {
 				throw new Error('Gemini API 未返回有效回复：未知原因，请稍后再试。');
 			}
 
-			const fullText = `🤖 \`${config.modelName}\`\n\n${resTexts}\n\n\n*✨ 本次处理共调用 ${callCount} 次 Gemini API（${retryCount} 次出错重试），总消耗 ${totalToken} 个 Token*\n\n*⚠️ AI 的回答无法保证百分百准确，请自行判断！*`;
+			const fullText = `🤖 模型：\`${config.modelName}\`
+
+			${resTexts}
+
+			*✨ 本次任务共调用 Gemini API ${callCount} 次（含 ${retryCount} 次错误重试），使用工具数：${usageToolCount}，耗时：${totalDuration} 秒，消耗 Token：${totalToken}*
+
+			*⚠ 本 AI 回答仅供参考，可能存在不准确之处，请您自行判断。*`;
 
 			const { ok, error: sendError } = await sendFormattedMessage(
 				env,
@@ -320,6 +333,12 @@ async function handleMentionMessage(message, env, isChat = false) {
 				]);
 			}
 		} catch (apiError) {
+			if (!isThinkMessageDeleted) {
+				await bot.deleteMessage({
+					chat_id: chatId,
+					message_id: thinkMessageId,
+				});
+			}
 			throw apiError;
 		}
 	} catch (error) {
