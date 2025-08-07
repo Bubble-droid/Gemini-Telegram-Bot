@@ -38,7 +38,7 @@ const getConfig = (env) => {
 		chatContentsKv: env.GROUP_CHAT_CONTENTS,
 		allowedGroupIds: env.ALLOWED_GROUP_IDS,
 		apiRateLimit: env.API_RATE_LIMIT,
-		maxContentsLength: Number(env.MAX_CONTENTS_LENGTH) || 6,
+		maxContentsLength: Number(env.MAX_CONTENTS_LENGTH) || 4,
 		maxCompressLength: Number(env.MAX_COMPRESS_LENGTH) || 4,
 		apiRequestInterval: Number(env.API_REQUEST_INTERVAL) || 0.5,
 		githubToken: env.GITHUB_TOKEN,
