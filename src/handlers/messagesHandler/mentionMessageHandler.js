@@ -237,9 +237,7 @@ async function handleMentionMessage(message, env, isChat = false) {
 			reply_to_message_id: replyToMessageId,
 		});
 
-		if (thinkMessageId) {
-			await scheduleDeletion(env, chatId, thinkMessageId, 30 * 60 * 1_000);
-		}
+		let isThinkMessageDeleted = false;
 
 		const geminiApi = new GeminiApi(env, {
 			chatId,
@@ -284,6 +282,10 @@ async function handleMentionMessage(message, env, isChat = false) {
 					chat_id: chatId,
 					message_id: thinkMessageId,
 				});
+				isThinkMessageDeleted = true;
+			} else {
+				await scheduleDeletion(env, chatId, thinkMessageId, 30 * 60 * 1_000);
+				isThinkMessageDeleted = true;
 			}
 
 			const resTexts =
@@ -294,10 +296,6 @@ async function handleMentionMessage(message, env, isChat = false) {
 					.trim() || '';
 
 			if (!resTexts) {
-				await bot.deleteMessage({
-					chat_id: chatId,
-					message_id: thinkMessageId,
-				});
 				throw new Error('Gemini API 未返回有效回复：未知原因，请稍后再试。');
 			}
 
@@ -322,10 +320,6 @@ async function handleMentionMessage(message, env, isChat = false) {
 				]);
 			}
 		} catch (apiError) {
-			await bot.deleteMessage({
-				chat_id: chatId,
-				message_id: thinkMessageId,
-			});
 			throw apiError;
 		}
 	} catch (error) {
