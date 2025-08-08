@@ -61,7 +61,7 @@ class GeminiApi {
 			tools: this.tools,
 			toolConfig: {
 				functionCallingConfig: {
-					mode: FunctionCallingConfigMode.VALIDATED,
+					mode: FunctionCallingConfigMode.AUTO,
 				},
 			},
 			responseMimeType: 'text/plain',
@@ -93,8 +93,6 @@ class GeminiApi {
 				},
 			],
 		};
-
-		console.log('Gemini API 配置:', JSON.stringify(baseConfig, null, 2));
 
 		const MAX_RETRIES = 3;
 		const BASE_DELAY = 10_000;
