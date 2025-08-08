@@ -1,6 +1,11 @@
 // src/api/GeminiApi.js
 
-import { GoogleGenAI, FunctionCallingConfigMode } from '@google/genai';
+import {
+	GoogleGenAI,
+	FunctionCallingConfigMode,
+	HarmBlockThreshold,
+	HarmCategory,
+} from '@google/genai';
 import getConfig from '../../env';
 import kvRead from '../../kvManager/kvRead';
 import tools from './toolDeclarations';
@@ -60,12 +65,36 @@ class GeminiApi {
 				},
 			},
 			responseMimeType: 'text/plain',
+			safetySettings: [
+				{
+					category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+					threshold: HarmBlockThreshold.BLOCK_NONE,
+				},
+				{
+					category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+					threshold: HarmBlockThreshold.BLOCK_NONE,
+				},
+				{
+					category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+					threshold: HarmBlockThreshold.BLOCK_NONE,
+				},
+				{
+					category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+					threshold: HarmBlockThreshold.BLOCK_NONE,
+				},
+				{
+					category: HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY,
+					threshold: HarmBlockThreshold.BLOCK_NONE,
+				},
+			],
 			systemInstruction: [
 				{
 					text: systemPrompt,
 				},
 			],
 		};
+
+		console.log('Gemini API 配置:', JSON.stringify(baseConfig, null, 2));
 
 		const MAX_RETRIES = 3;
 		const BASE_DELAY = 10_000;
