@@ -335,7 +335,7 @@ ${resTexts}
 			}
 		} catch (apiError) {
 			if (!isThinkMessageDeleted) {
-				if (!hasThinkThoughts && !hasResThoughts) {
+				if (!apiError.hasThinkThoughts && !hasResThoughts) {
 					await bot.deleteMessage({
 						chat_id: chatId,
 						message_id: thinkMessageId,
