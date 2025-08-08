@@ -63,14 +63,13 @@ async function uploadFileToGemini(
 			name: `files/${randomString(12)}`,
 		};
 
-		let uploadedFile = {};
-		for (const [apiKey, apiKeyId] of geminiApiKeys) {
-			const ai = new GoogleGenAI({ apiKey });
-			uploadedFile = await ai.files.upload({
-				file: fileBlob,
-				config: uploadedFileConfig,
-			});
-		}
+		const [apiKey, apiKeyId] = geminiApiKeys[1];
+
+		const ai = new GoogleGenAI({ apiKey });
+		const uploadedFile = await ai.files.upload({
+			file: fileBlob,
+			config: uploadedFileConfig,
+		});
 
 		console.log(
 			`Upload initiated. File name: ${uploadedFile.name}, State: ${uploadedFile.state}`
@@ -103,8 +102,8 @@ async function processGeminiFile(uploadedFile, env) {
 	const geminiApiKeys = await kvRead(config.botConfigKv, 'gemini_api_keys', {
 		type: 'json',
 	});
-	const [key, keyId] = geminiApiKeys[1];
-	const ai = new GoogleGenAI({ apiKey: key });
+	const [apiKey, apiKeyId] = geminiApiKeys[1];
+	const ai = new GoogleGenAI({ apiKey });
 	try {
 		let getFileStatus = await ai.files.get({ name: uploadedFile.name });
 
