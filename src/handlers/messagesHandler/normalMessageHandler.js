@@ -21,7 +21,7 @@ async function handleNormalMessage(message, env) {
 			if (replyToMessageTexts.startsWith('🤖 模型：')) {
 				const cleanMessageTexts = replyToMessageTexts
 					.replace(/^🤖 模型：.*?\n+/, '')
-					.replace(/\n+✨ 本次任务[\s\S]*$/m, '');
+					.replace(/✨ 本次任务[\s\S]*$/m, '');
 				message.reply_to_message.text = cleanMessageTexts.trim();
 
 			}

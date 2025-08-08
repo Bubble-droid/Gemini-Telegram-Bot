@@ -4,6 +4,8 @@ import { GoogleGenAI } from '@google/genai';
 import getConfig from '../../env';
 import downloadFileAsArrayBuffer from './fileDownloader';
 import TelegramBot from '../../api/TelegramBot';
+import kvRead from '../../kvManager/kvRead';
+import { randomString } from '../../utils/helpers';
 
 /**
  * 上传文件到 Gemini 并等待其处理完成。
@@ -13,10 +15,16 @@ import TelegramBot from '../../api/TelegramBot';
  * @param {object} env - Cloudflare Worker 的环境变量对象。
  * @returns {Promise<object|null>} 成功上传到 Gemini 的文件对象，如果处理失败则返回 null。
  */
-async function uploadFileToGemini(fileId, fileName, mimeType, env, isToolExec = false, toolExecArgs) {
+async function uploadFileToGemini(
+	fileId,
+	fileName,
+	mimeType,
+	env,
+	isToolExec = false,
+	toolExecArgs
+) {
 	const config = getConfig(env);
 	const bot = new TelegramBot(env);
-	const ai = new GoogleGenAI({ apiKey: config.apiKey });
 
 	try {
 		let fileUrl = '';
@@ -42,14 +50,31 @@ async function uploadFileToGemini(fileId, fileName, mimeType, env, isToolExec = 
 
 		// 3. 将文件上传到 Gemini
 		console.log('Uploading file to Gemini...');
-		const uploadedFile = await ai.files.upload({
-			file: new Blob([fileArrayBuffer], { type: isToolExec ? toolExecArgs.mimeType : mimeType }),
-			config: {
-				displayName: isToolExec ? toolExecArgs.fileName : fileName,
-				mimeType: isToolExec ? toolExecArgs.mimeType : mimeType,
-			},
+		const geminiApiKeys = await kvRead(config.botConfigKv, 'gemini_api_keys', {
+			type: 'json',
 		});
-		console.log(`Upload initiated. File name: ${uploadedFile.name}, State: ${uploadedFile.state}`);
+
+		const fileBlob = new Blob([fileArrayBuffer], {
+			type: isToolExec ? toolExecArgs.mimeType : mimeType,
+		});
+		const uploadedFileConfig = {
+			displayName: isToolExec ? toolExecArgs.fileName : fileName,
+			mimeType: isToolExec ? toolExecArgs.mimeType : mimeType,
+			name: `files/${randomString(12)}`,
+		};
+
+		let uploadedFile = {};
+		for (const [key, keyId] of geminiApiKeys) {
+			const ai = new GoogleGenAI({ apiKey: key });
+			uploadedFile = await ai.files.upload({
+				file: fileBlob,
+				config: uploadedFileConfig,
+			});
+		}
+
+		console.log(
+			`Upload initiated. File name: ${uploadedFile.name}, State: ${uploadedFile.state}`
+		);
 
 		// 4. 等待文件处理完成
 		const getFileStatus = await processGeminiFile(uploadedFile, env);
@@ -75,12 +100,18 @@ async function uploadFileToGemini(fileId, fileName, mimeType, env, isToolExec = 
  */
 async function processGeminiFile(uploadedFile, env) {
 	const config = getConfig(env);
-	const ai = new GoogleGenAI({ apiKey: config.apiKey });
+	const geminiApiKeys = await kvRead(config.botConfigKv, 'gemini_api_keys', {
+		type: 'json',
+	});
+	const [key, keyId] = geminiApiKeys[1];
+	const ai = new GoogleGenAI({ apiKey: key });
 	try {
 		let getFileStatus = await ai.files.get({ name: uploadedFile.name });
 
 		while (getFileStatus.state === 'PROCESSING') {
-			console.log(`Current Gemini file status: ${getFileStatus.state}. Retrying in 5 seconds...`);
+			console.log(
+				`Current Gemini file status: ${getFileStatus.state}. Retrying in 5 seconds...`
+			);
 			await new Promise((resolve) => setTimeout(resolve, 5000));
 			getFileStatus = await ai.files.get({ name: uploadedFile.name });
 		}
@@ -91,7 +122,9 @@ async function processGeminiFile(uploadedFile, env) {
 			return null;
 		}
 
-		console.log(`Gemini file processing complete. Final state: ${getFileStatus.state}`);
+		console.log(
+			`Gemini file processing complete. Final state: ${getFileStatus.state}`
+		);
 		return getFileStatus;
 	} catch (error) {
 		console.error('Error in processGeminiFile:', error);

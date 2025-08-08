@@ -244,6 +244,9 @@ async function handleMentionMessage(message, env, isChat = false) {
 			replyToMessageId,
 			thinkMessageId,
 		});
+
+		let hasResThoughts = false;
+
 		try {
 			const {
 				response,
@@ -261,8 +264,6 @@ async function handleMentionMessage(message, env, isChat = false) {
 					.map((part) => part.text)
 					.join('')
 					.trim() || '';
-
-			let hasResThoughts = false;
 
 			if (resThoughtTexts) {
 				hasResThoughts = true;
@@ -334,10 +335,14 @@ ${resTexts}
 			}
 		} catch (apiError) {
 			if (!isThinkMessageDeleted) {
-				await bot.deleteMessage({
-					chat_id: chatId,
-					message_id: thinkMessageId,
-				});
+				if (!hasThinkThoughts && !hasResThoughts) {
+					await bot.deleteMessage({
+						chat_id: chatId,
+						message_id: thinkMessageId,
+					});
+				} else {
+					await scheduleDeletion(env, chatId, thinkMessageId, 30 * 60 * 1_000);
+				}
 			}
 			throw apiError;
 		}

@@ -179,3 +179,4 @@ dist
 
 .dev.vars
 .wrangler/
+kv/gemini_api_keys.json

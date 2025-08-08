@@ -48,7 +48,7 @@ async function getTimestamp(kvNamespace, key) {
 async function rateLimiterCheck(env, chatId) {
 	const config = getConfig(env);
 	const kvNamespace = config.apiRateLimit;
-	const intervalMinutes = config.apiRequestInterval || 1.0;
+	const intervalMinutes = config.apiRequestInterval || 0.5;
 
 	if (!kvNamespace) {
 		// 如果 KV 绑定未找到，记录错误并拒绝请求，提供默认重试时间

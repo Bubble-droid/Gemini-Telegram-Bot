@@ -148,7 +148,7 @@ class GeminiApi {
 								.trim() || '';
 
 						if (thoughtTexts) {
-							hasThoughts = hasThoughts ? hasThoughts : true;
+							hasThoughts = true;
 							this.bot.editMessageText(
 								{
 									chat_id: this.chatId,
@@ -307,6 +307,7 @@ class GeminiApi {
 			} catch (error) {
 				console.error('调用 Gemini API 或处理工具调用过程中发生错误:', error);
 				// 错误已在内部记录和通知，这里只需重新抛出或返回错误状态
+				error.hasThinkThoughts = hasThoughts;
 				throw error;
 			}
 		}

@@ -40,7 +40,7 @@ const getConfig = (env) => {
 		apiRateLimit: env.API_RATE_LIMIT,
 		maxContentsLength: Number(env.MAX_CONTENTS_LENGTH) || 4,
 		maxCompressLength: Number(env.MAX_COMPRESS_LENGTH) || 4,
-		apiRequestInterval: Number(env.API_REQUEST_INTERVAL) || 0.5,
+		apiRequestInterval: Number(env.API_REQUEST_INTERVAL) || 0.3,
 		githubToken: env.GITHUB_TOKEN,
 	};
 };
